@@ -46,6 +46,6 @@ app.get('/', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${process.env.PORT}`);
 });
