@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Ruta para enviar correos
-app.post('/enviar-correo', (req, res) => {
+app.post('/', (req, res) => {
   const { destinatario, asunto, mensaje } = req.body;
 
   // Configurar el contenido del correo
