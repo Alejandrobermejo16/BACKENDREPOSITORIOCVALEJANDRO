@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'alejandrobermejomendez170712@gmail.com',
-    pass: 'hkbj tofw gaoe xqpp' // Reemplaza con tu nueva contraseña de aplicación
+    pass: 'hkbj tofw gaoe xqpp' 
   }
 });
 
