@@ -1,53 +1,44 @@
-// users.js
-
-const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
 require('dotenv').config();
+const express = require('express');
+const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
 
-// URI de conexión a MongoDB desde el archivo .env
 const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
 
-// Configurar el cliente de MongoDB
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
+const connectMongoDB = async () => {
+  try {
+    await client.connect();
+    console.log('Conexión establecida correctamente con MongoDB');
+  } catch (error) {
+    console.error('Error al conectar con MongoDB:', error);
+    throw error;
   }
-});
-
-// Middleware para manejar errores asíncronos
-const asyncMiddleware = fn => (req, res, next) => {
-  Promise.resolve(fn(req, res, next))
-    .catch(next);
 };
 
-// Conectar a MongoDB antes de escuchar las solicitudes
+const asyncMiddleware = fn => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
 app.use(asyncMiddleware(async (req, res, next) => {
-  if (!client.isConnected()) {
-    await client.connect();
-  }
+  await connectMongoDB();
   req.dbClient = client;
   next();
 }));
 
-// Ruta para crear usuarios
 app.post('/api/users', asyncMiddleware(async (req, res) => {
   const { name, email, password } = req.body;
   const dbClient = req.dbClient;
 
   try {
-    const database = dbClient.db('abmUsers'); // Cambia el nombre de la base de datos si es necesario
+    const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
 
-    // Verificar si el usuario ya existe por nombre o correo electrónico
     const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
@@ -62,18 +53,15 @@ app.post('/api/users', asyncMiddleware(async (req, res) => {
   }
 }));
 
-// Ruta de inicio
 app.get('/', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
 });
 
-// Manejar errores generales
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
 });
 
-// Iniciar el servidor Express
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
