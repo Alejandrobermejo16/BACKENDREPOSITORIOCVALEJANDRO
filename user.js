@@ -61,7 +61,7 @@ app.post('/api/users', async (req, res, next) => {
 
 // Ruta de inicio
 app.get('/', (req, res) => {
-  res.send('¡Hola, mundo desde el backend!');
+  res.send('¡Hola, mundo desde el backend !');
 });
 
 // Middleware de manejo de errores
