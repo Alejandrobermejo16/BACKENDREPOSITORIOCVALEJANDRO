@@ -1,10 +1,13 @@
-require('dotenv').config();
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // Importa el middleware CORS
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
+app.use(cors());
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
