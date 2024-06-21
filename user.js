@@ -4,16 +4,15 @@ const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = process.env.PORT ||  3001;
+const PORT = process.env.PORT || 3001;
 
 app.use(bodyParser.json());
 
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Middleware para conectar a MongoDB antes de cada solicitud
 const connectMongoDB = async () => {
-  if (!client.isConnected()) {
+  if (!client.topology || !client.topology.isConnected()) {
     try {
       await client.connect();
       console.log('Conexión establecida correctamente con MongoDB');
@@ -24,13 +23,6 @@ const connectMongoDB = async () => {
   }
 };
 
-// Middleware para manejar errores
-const errorHandler = (err, req, res, next) => {
-  console.error('Error in Express middleware:', err);
-  res.status(500).json({ message: 'Something broke!' });
-};
-
-// Middleware asincrónico para conectar MongoDB antes de cada solicitud
 app.use(async (req, res, next) => {
   await connectMongoDB();
   req.dbClient = client;
@@ -39,6 +31,7 @@ app.use(async (req, res, next) => {
 
 app.post('/api/users', async (req, res, next) => {
   const { name, email, password } = req.body;
+  console.log('Datos recibidos:', { name, email, password });
   const dbClient = req.dbClient;
 
   try {
@@ -47,27 +40,27 @@ app.post('/api/users', async (req, res, next) => {
 
     const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
     if (existingUser) {
+      console.log('Usuario ya existe:', existingUser);
       return res.status(400).json({ message: 'User already exists' });
     }
 
     const newUser = { name, email, password };
     const result = await collection.insertOne(newUser);
+    console.log('Usuario creado:', result.insertedId);
     res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
   } catch (error) {
-    next(error); // Pasar el error al middleware de manejo de errores
+    console.error('Error al crear usuario:', error);
+    next(error); 
   }
 });
 
-
-// Ruta de inicio
-app.get('/', (req, res) => {
-  res.send('¡Hola, mundo desde el backend !');
+app.use((err, req, res, next) => {
+  console.error('Error in Express middleware:', err);
+  res.status(500).json({ message: 'Something broke!' });
 });
 
-// Middleware de manejo de errores
-app.use(errorHandler);
-
-// Escuchar en el puerto
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en el puerto ${PORT}`);
+  console.log(`API de usuarios corriendo en el puerto ${PORT}`);
 });
+
+module.exports = app;
