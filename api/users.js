@@ -1,60 +1,70 @@
+require('dotenv').config();
 const express = require('express');
-const nodemailer = require('nodemailer');
+const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware para permitir solicitudes CORS desde un origen específico
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://abmprojects-7kay.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});
-
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
 
-// Configurar el transporter para enviar correos
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'alejandrobermejomendez170712@gmail.com',
-    pass: 'hkbj tofw gaoe xqpp' 
+// Configurar MongoDB
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Middleware para conectar a MongoDB antes de cada solicitud
+const connectMongoDB = async () => {
+  if (!client.isConnected()) {
+    try {
+      await client.connect();
+      console.log('Conexión establecida correctamente con MongoDB');
+    } catch (error) {
+      console.error('Error al conectar con MongoDB:', error);
+      throw error;
+    }
+  }
+};
+
+// Middleware asincrónico para conectar MongoDB antes de cada solicitud
+app.use(async (req, res, next) => {
+  await connectMongoDB();
+  req.dbClient = client;
+  next();
+});
+
+// Ruta para crear usuarios
+app.post('/api/users', async (req, res) => {
+  const { name, email, password } = req.body;
+  const dbClient = req.dbClient;
+
+  try {
+    const database = dbClient.db('abmUsers');
+    const collection = database.collection('users');
+
+    const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    const newUser = { name, email, password };
+    const result = await collection.insertOne(newUser);
+    res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
+  } catch (error) {
+    console.error('Error al crear usuario:', error);
+    res.status(500).json({ message: 'Error creating user' });
   }
 });
 
-// Ruta para enviar correos
-app.post('/', (req, res) => {
-  const { destinatario, asunto, mensaje } = req.body;
-
-  // Configurar el contenido del correo
-  const mailOptions = {
-    from: 'alejandrobermejomendez170712@gmail.com',
-    to: destinatario,
-    subject: asunto,
-    text: mensaje
-  };
-
-  // Enviar el correo
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error(error);
-      res.status(500).send('Error al enviar el correo');
-    } else {
-      console.log('Correo enviado: ' + info.response);
-      res.status(200).send('Correo enviado correctamente');
-    }
-  });
+// Middleware de manejo de errores
+app.use((err, req, res, next) => {
+  console.error('Error in Express middleware:', err);
+  res.status(500).json({ message: 'Something broke!' });
 });
 
-// Ruta de inicio
-app.get('/', (req, res) => {
-  res.send('¡Hola, mundo desde el backend!');
-});
-
+// Escuchar en el puerto
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+module.exports = app;
