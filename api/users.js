@@ -1,20 +1,14 @@
-const express = require('express');
 const { MongoClient } = require('mongodb');
+const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Importa el middleware CORS
+const cors = require('cors');
+require('dotenv').config(); // Asegúrate de cargar las variables de entorno desde .env
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware para permitir solicitudes CORS desde un origen específico
-const corsOptions = {
-  origin: 'https://abmprojects-7kay.vercel.app',
-  methods: 'GET, POST, OPTIONS, PUT, PATCH, DELETE',
-  allowedHeaders: 'X-Requested-With,content-type',
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
+// Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
+app.use(cors());
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
@@ -49,8 +43,8 @@ app.post('/api/users', async (req, res) => {
   const dbClient = req.dbClient;
 
   try {
-    const database = dbClient.db('abmUsers');
-    const collection = database.collection('users');
+    const database = dbClient.db('abmUsers'); // Nombre de la base de datos
+    const collection = database.collection('users'); // Nombre de la colección
 
     const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
     if (existingUser) {
