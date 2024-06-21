@@ -37,7 +37,6 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Ruta para crear usuarios
 app.post('/api/users', async (req, res, next) => {
   const { name, email, password } = req.body;
   const dbClient = req.dbClient;
@@ -58,6 +57,7 @@ app.post('/api/users', async (req, res, next) => {
     next(error); // Pasar el error al middleware de manejo de errores
   }
 });
+
 
 // Ruta de inicio
 app.get('/', (req, res) => {
