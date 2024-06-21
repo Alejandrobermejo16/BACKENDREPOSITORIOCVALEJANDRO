@@ -6,8 +6,15 @@ const cors = require('cors'); // Importa el middleware CORS
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
-app.use(cors());
+// Middleware para permitir solicitudes CORS desde un origen específico
+const corsOptions = {
+  origin: 'https://abmprojects-7kay.vercel.app/api/users',
+  methods: 'GET, POST, OPTIONS, PUT, PATCH, DELETE',
+  allowedHeaders: 'X-Requested-With,content-type',
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
