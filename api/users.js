@@ -1,8 +1,8 @@
-const { MongoClient } = require('mongodb');
 const express = require('express');
+const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config(); // Asegúrate de cargar las variables de entorno desde .env
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -43,8 +43,8 @@ app.post('/api/users', async (req, res) => {
   const dbClient = req.dbClient;
 
   try {
-    const database = dbClient.db('abmUsers'); // Nombre de la base de datos
-    const collection = database.collection('users'); // Nombre de la colección
+    const database = dbClient.db('abmUsers');
+    const collection = database.collection('users');
 
     const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
     if (existingUser) {
