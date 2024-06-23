@@ -1,21 +1,15 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 require('dotenv').config();
-const cors = require('cors'); // Importa el módulo CORS
-
 
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
-// Middleware para permitir solicitudes CORS desde un origen específico
-app.use(cors({
-  origin: 'https://abmprojects-7kay.vercel.app', // Cambia esto por tu dominio frontend
-  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'], // Métodos HTTP permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
-  credentials: true // Permite enviar credenciales (cookies)
-}));
+// Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
+router.use(cors());
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 router.use(bodyParser.json());
