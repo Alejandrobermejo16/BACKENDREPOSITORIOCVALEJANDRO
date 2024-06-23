@@ -1,6 +1,7 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
+const usersRouter = require('./api/users');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,7 +23,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'alejandrobermejomendez170712@gmail.com',
-    pass: 'hkbj tofw gaoe xqpp' 
+    pass: 'hkbj tofw gaoe xqpp'
   }
 });
 
@@ -54,6 +55,9 @@ app.post('/', (req, res) => {
 app.get('/', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
 });
+
+// Usar el router de usuarios
+app.use('/api/users', usersRouter);
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
