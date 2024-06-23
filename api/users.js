@@ -1,15 +1,11 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
-const cors = require('cors');
 require('dotenv').config();
 
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
-
-// Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
-router.use(cors());
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 router.use(bodyParser.json());

@@ -2,18 +2,18 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const usersRouter = require('./api/users');
+const cors = require('cors'); // Importa el módulo CORS
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware para permitir solicitudes CORS desde un origen específico
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://abmprojects-7kay.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});
+app.use(cors({
+  origin: 'https://abmprojects-7kay.vercel.app', // Cambia esto por tu dominio frontend
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'], // Métodos HTTP permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
+  credentials: true // Permite enviar credenciales (cookies)
+}));
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
