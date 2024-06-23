@@ -5,19 +5,14 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
-// Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
 app.use(cors());
-
-// Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
 
 // Configurar MongoDB
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Middleware para conectar a MongoDB antes de cada solicitud
 const connectMongoDB = async () => {
   if (!client.isConnected()) {
     try {
@@ -30,20 +25,12 @@ const connectMongoDB = async () => {
   }
 };
 
-// Middleware asincrónico para conectar MongoDB antes de cada solicitud
-app.use(async (req, res, next) => {
-  await connectMongoDB();
-  req.dbClient = client;
-  next();
-});
-
-// Ruta para crear usuarios
 app.post('/api/users', async (req, res) => {
   const { name, email, password } = req.body;
-  const dbClient = req.dbClient;
 
   try {
-    const database = dbClient.db('abmUsers');
+    await connectMongoDB();
+    const database = client.db('abmUsers');
     const collection = database.collection('users');
 
     const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
@@ -64,11 +51,6 @@ app.post('/api/users', async (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
-});
-
-// Escuchar en el puerto
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
 module.exports = app;
