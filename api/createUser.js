@@ -9,11 +9,7 @@ const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Middleware para permitir solicitudes CORS desde tu frontend
-app.use(cors({
-  origin: 'https://abmprojects-7kay.vercel.app', // Reemplaza con el dominio de tu frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'] // Encabezados permitidos
-}));
+app.use(cors());
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
