@@ -21,12 +21,14 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'alejandrobermejomendez170712@gmail.com',
-    pass: 'hkbj tofw gaoe xqpp' 
+    pass: 'hkbj tofw gaoe xqpp'
   }
 });
+
 // Ruta para enviar correos
 app.post('/', (req, res) => {
   const { destinatario, asunto, mensaje } = req.body;
+
   // Configurar el contenido del correo
   const mailOptions = {
     from: 'alejandrobermejomendez170712@gmail.com',
@@ -34,31 +36,36 @@ app.post('/', (req, res) => {
     subject: asunto,
     text: mensaje
   };
+
   // Enviar el correo
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.error(error);
-      res.status(500).send('Error al enviar el correo');
+      res.status(500).json({ error: 'Error al enviar el correo' });
     } else {
       console.log('Correo enviado: ' + info.response);
       res.status(200).json({ message: 'Correo enviado correctamente' });
-      
     }
   });
 });
+
 // Ruta de inicio
 app.get('/', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
 });
+
+// Ejemplo de ruta adicional para obtener productos (simulado)
 app.get('/products', (req, res) => {
   const products = [
-      { id: 1, name: 'hammer' },
-      { id: 2, name: 'screwdriver' },
-      { id: 3, name: 'wrench' },
+    { id: 1, name: 'hammer' },
+    { id: 2, name: 'screwdriver' },
+    { id: 3, name: 'wrench' },
   ];
 
   res.json(products);
 });
+
+// Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
