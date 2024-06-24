@@ -1,13 +1,18 @@
 const express = require('express');
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const uri = process.env.MONGODB_URI; // Debes configurar esto en tu archivo .env
+
+// Configuración del cliente MongoDB
+const client = new MongoClient(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 // Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
 app.use(cors());
@@ -36,7 +41,7 @@ app.use(async (req, res, next) => {
 });
 
 // Ruta para crear usuarios
-app.post('/users', async (req, res) => {
+app.post('/api/createUser', async (req, res) => {
   const { name, email, password } = req.body;
   const dbClient = req.dbClient;
 
@@ -44,7 +49,7 @@ app.post('/users', async (req, res) => {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
 
-    const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
+    const existingUser = await collection.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
@@ -53,25 +58,14 @@ app.post('/users', async (req, res) => {
     const result = await collection.insertOne(newUser);
     res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
   } catch (error) {
-    console.error('Error al crear usuario:', error);
+    console.error('Error creating user:', error);
     res.status(500).json({ message: 'Error creating user' });
   }
 });
 
-// Ruta para obtener productos (simulado)
-app.get('/products', async (req, res) => {
-  const dbClient = req.dbClient;
-
-  try {
-    const database = dbClient.db('abmProducts');
-    const collection = database.collection('products');
-
-    const products = await collection.find({}).toArray();
-    res.json(products);
-  } catch (error) {
-    console.error('Error al obtener productos:', error);
-    res.status(500).json({ message: 'Error retrieving products' });
-  }
+// Ruta de prueba para verificar el funcionamiento del servidor
+app.get('/', (req, res) => {
+  res.send('¡Hola, mundo desde el backend!');
 });
 
 // Middleware de manejo de errores
