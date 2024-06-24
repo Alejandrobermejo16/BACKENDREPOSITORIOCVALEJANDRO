@@ -6,9 +6,9 @@ require('dotenv').config();
 
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
+// Middleware para permitir solicitudes CORS desde cualquier origen
 router.use(cors());
 
 // Middleware para analizar el cuerpo de la solicitud JSON
@@ -16,7 +16,7 @@ router.use(bodyParser.json());
 
 // Middleware para conectar a MongoDB antes de cada solicitud
 const connectMongoDB = async () => {
-  if (!client.topology || !client.topology.isConnected()) {
+  if (!client.isConnected()) {
     try {
       await client.connect();
       console.log('Conexión establecida correctamente con MongoDB');
