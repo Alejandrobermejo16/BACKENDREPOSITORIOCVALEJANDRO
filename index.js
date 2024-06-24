@@ -29,7 +29,7 @@ app.get('/users', (req, res) => {
   res.send('¡Hola, prueba index');
 });
 
-app.get('/createUsers', (req, res) => {
+app.get('api/createUsers', (req, res) => {
   res.send('usuario creado');
 });
 
