@@ -1,12 +1,22 @@
-// Middleware para permitir solicitudes CORS desde un origen específico
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const nodemailer = require('nodemailer');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware para permitir solicitudes CORS desde cualquier origen
 app.use(cors({
-  origin: '*', // Cambia esto por tu dominio frontend
+  origin: '*', // Cambia esto por tu dominio frontend si es necesario
   methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'], // Métodos HTTP permitidos
   allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
   credentials: true // Permite enviar credenciales (cookies)
 }));
+
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
+
 // Configurar el transporter para enviar correos
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -15,9 +25,11 @@ const transporter = nodemailer.createTransport({
     pass: 'hkbj tofw gaoe xqpp'
   }
 });
+
 // Ruta para enviar correos
 app.post('/', (req, res) => {
   const { destinatario, asunto, mensaje } = req.body;
+
   // Configurar el contenido del correo
   const mailOptions = {
     from: 'alejandrobermejomendez170712@gmail.com',
@@ -25,6 +37,7 @@ app.post('/', (req, res) => {
     subject: asunto,
     text: mensaje
   };
+
   // Enviar el correo
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
@@ -36,12 +49,16 @@ app.post('/', (req, res) => {
     }
   });
 });
+
 // Ruta de inicio
 app.get('/', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
 });
+
 // Usar el router de usuarios
-app.use('/api/users', usersRouter);
+// Suponiendo que usersRouter está correctamente configurado
+// app.use('/api/users', usersRouter);
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
