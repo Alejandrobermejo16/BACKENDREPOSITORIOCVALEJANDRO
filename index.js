@@ -21,6 +21,11 @@ app.get('/', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
 });
 
+// Ruta de inicio
+app.get('/api/users', (req, res) => {
+  res.send('creacion de usuarios');
+});
+
 // Rutas de la API
 const usersRouter = require('./api/users');
 const createUserRouter = require('./api/createUser');

@@ -29,13 +29,9 @@ const connectMongoDB = async () => {
 
 // Middleware asincrónico para conectar MongoDB antes de cada solicitud
 router.use(async (req, res, next) => {
-  try {
-    await connectMongoDB();
-    req.dbClient = client;
-    next();
-  } catch (error) {
-    next(error);
-  }
+  await connectMongoDB();
+  req.dbClient = client;
+  next();
 });
 
 // Ruta para crear usuarios
