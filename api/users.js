@@ -21,7 +21,7 @@ router.use((req, res, next) => {
 });
 
 // Ruta para obtener todos los usuarios
-router.get('/', (req, res) => {
+router.get('/users', (req, res) => {
   res.json({ message: 'Lista de usuarios' });
 });
 
