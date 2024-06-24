@@ -5,6 +5,7 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Habilitar CORS globalmente para todas las rutas
 app.use(cors({
   origin: '*', // Permitir solicitudes desde cualquier origen (ajustar según necesidades)
   methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'], // Métodos HTTP permitidos
@@ -20,20 +21,15 @@ app.get('/', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
 });
 
-// Ruta de prueba para /users
-app.get('/users', (req, res) => {
-  res.send('¡Hola, prueba index');
-});
-
-
-
 // Rutas de la API
 const usersRouter = require('./api/users');
 const createUserRouter = require('./api/createUser');
 const getUserByIdRouter = require('./api/getUserById');
 
-app.use('/users', usersRouter);
-app.use('/api/users', createUserRouter);
+app.use('/users', usersRouter); // Ruta para otras operaciones relacionadas con usuarios
+app.use('/api/users', createUserRouter); // Ruta para crear usuarios
+
+// Ruta para obtener un usuario por ID
 app.use('/api/users/:userId', getUserByIdRouter);
 
 app.listen(PORT, () => {
