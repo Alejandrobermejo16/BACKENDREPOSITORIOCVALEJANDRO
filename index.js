@@ -25,18 +25,15 @@ app.get('/users', (req, res) => {
   res.send('¡Hola, prueba index');
 });
 
-// Ruta de prueba para /api/createUsers
-app.get('/api/createUsers', (req, res) => {
-  res.send('Usuario creado');
-});
+
 
 // Rutas de la API
 const usersRouter = require('./api/users');
 const createUserRouter = require('./api/createUser');
 const getUserByIdRouter = require('./api/getUserById');
 
-app.use('/api/users', usersRouter);
-app.use('/api/users/create', createUserRouter);
+app.use('/users', usersRouter);
+app.use('/api/users', createUserRouter);
 app.use('/api/users/:userId', getUserByIdRouter);
 
 app.listen(PORT, () => {
