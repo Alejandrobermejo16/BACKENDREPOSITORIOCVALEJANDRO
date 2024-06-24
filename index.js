@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware para permitir solicitudes CORS desde un origen específico
 app.use(cors({
-  origin: 'https://abmprojects-7kay.vercel.app', // Cambia esto por tu dominio frontend
+  origin: '*', // Cambia esto por tu dominio frontend
   methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'], // Métodos HTTP permitidos
   allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
   credentials: true // Permite enviar credenciales (cookies)
