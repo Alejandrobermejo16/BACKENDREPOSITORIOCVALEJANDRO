@@ -8,8 +8,13 @@ const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
-// Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
-router.use(cors());
+// Middleware para permitir solicitudes CORS desde el origen de tu frontend
+router.use(cors({
+  origin: 'https://abmprojects-7kay.vercel.app', // Reemplaza con la URL de tu frontend en Vercel
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Custom-Header'],
+  credentials: true
+}));
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 router.use(bodyParser.json());
@@ -34,7 +39,7 @@ router.use(async (req, res, next) => {
   next();
 });
 
-// Ruta para crear usuarios
+// Ruta para crear usuarios dentro de /api/users
 router.post('/api/users', async (req, res) => {
   const { name, email, password } = req.body;
   const dbClient = req.dbClient;
