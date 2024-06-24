@@ -8,18 +8,23 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware para permitir solicitudes CORS desde cualquier origen
-app.use(cors({
-  origin: '*', // Permitir solicitudes desde cualquier origen (ajustar según necesidades)
-  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'], // Métodos HTTP permitidos
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Custom-Header'], // Encabezados permitidos (incluyendo X-Custom-Header)
-  credentials: true // Permite enviar credenciales (cookies)
-}));
+app.use(cors());
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
 
 // Ruta de inicio
 app.get('/', (req, res) => {
+  res.send('¡Hola, mundo desde el backend!');
+});
+
+// Ruta de inicio
+app.get('/users', (req, res) => {
+  res.send('¡Hola, mundo desde el backend!');
+});
+
+// Ruta de inicio
+app.get('/api/users', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
 });
 
