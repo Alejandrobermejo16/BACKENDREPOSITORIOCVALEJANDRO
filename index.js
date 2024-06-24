@@ -29,6 +29,10 @@ app.get('/users', (req, res) => {
   res.send('¡Hola, prueba index');
 });
 
+app.get('/createUsers', (req, res) => {
+  res.send('usuario creado');
+});
+
 // Ruta de inicio
 app.get('/api/users', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');

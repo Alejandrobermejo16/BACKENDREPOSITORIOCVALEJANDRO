@@ -16,7 +16,7 @@ router.use((req, res, next) => {
 });
 
 // Ruta para crear un usuario
-router.post('/', (req, res) => {
+router.post('/createUsers', (req, res) => {
   const { name, email } = req.body;
   res.status(201).json({ message: `Usuario creado: ${name}, ${email}` });
 });
