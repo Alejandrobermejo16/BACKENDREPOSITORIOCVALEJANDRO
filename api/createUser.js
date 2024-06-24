@@ -41,7 +41,7 @@ router.use(async (req, res, next) => {
 
 // Ruta para crear usuarios dentro de /api/users
 router.post('/api/users', async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email } = req.body;
   const dbClient = req.dbClient;
 
   try {
@@ -53,7 +53,7 @@ router.post('/api/users', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const newUser = { name, email, password };
+    const newUser = { name, email };
     const result = await collection.insertOne(newUser);
     res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
   } catch (error) {
