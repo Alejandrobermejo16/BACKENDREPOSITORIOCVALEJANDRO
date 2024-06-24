@@ -1,22 +1,23 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
 
-const router = express.Router();
+const app = express();
+const PORT = process.env.PORT || 3001;
 const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
-router.use(cors());
+app.use(cors());
 
 // Middleware para analizar el cuerpo de la solicitud JSON
-router.use(bodyParser.json());
+app.use(bodyParser.json());
 
 // Middleware para conectar a MongoDB antes de cada solicitud
 const connectMongoDB = async () => {
-  if (!client.topology || !client.topology.isConnected()) {
+  if (!client.isConnected()) {
     try {
       await client.connect();
       console.log('Conexión establecida correctamente con MongoDB');
@@ -28,14 +29,14 @@ const connectMongoDB = async () => {
 };
 
 // Middleware asincrónico para conectar MongoDB antes de cada solicitud
-router.use(async (req, res, next) => {
+app.use(async (req, res, next) => {
   await connectMongoDB();
   req.dbClient = client;
   next();
 });
 
 // Ruta para crear usuarios
-router.post('/', async (req, res) => {
+app.post('/users', async (req, res) => {
   const { name, email, password } = req.body;
   const dbClient = req.dbClient;
 
@@ -57,10 +58,29 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Ruta para obtener productos (simulado)
+app.get('/products', async (req, res) => {
+  const dbClient = req.dbClient;
+
+  try {
+    const database = dbClient.db('abmProducts');
+    const collection = database.collection('products');
+
+    const products = await collection.find({}).toArray();
+    res.json(products);
+  } catch (error) {
+    console.error('Error al obtener productos:', error);
+    res.status(500).json({ message: 'Error retrieving products' });
+  }
+});
+
 // Middleware de manejo de errores
-router.use((err, req, res, next) => {
+app.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
 });
 
-module.exports = router;
+// Iniciar el servidor
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
