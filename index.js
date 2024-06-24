@@ -41,13 +41,23 @@ app.post('/', (req, res) => {
       res.status(500).send('Error al enviar el correo');
     } else {
       console.log('Correo enviado: ' + info.response);
-      res.status(200).send('Correo enviado correctamente');
+      res.status(200).json({ message: 'Correo enviado correctamente' });
+      
     }
   });
 });
 // Ruta de inicio
 app.get('/', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
+});
+app.get('/products', (req, res) => {
+  const products = [
+      { id: 1, name: 'hammer' },
+      { id: 2, name: 'screwdriver' },
+      { id: 3, name: 'wrench' },
+  ];
+
+  res.json(products);
 });
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
