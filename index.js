@@ -7,8 +7,14 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware para permitir solicitudes CORS desde cualquier origen
-app.use(cors());
+const whiteList = ['http://localhost/3001','http://localhost/3000','https://backendabmprojects.vercel.app/api/users','https://backendabmprojects.vercel.app', 'https://abmprojects-7kay.vercel.app/']
+
+app.use(cors({
+  origin: whiteList, // Permitir solicitudes desde cualquier origen (ajustar según necesidades)
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'], // Métodos HTTP permitidos
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Custom-Header'], // Encabezados permitidos (incluyendo X-Custom-Header)
+  credentials: true // Permite enviar credenciales (cookies)
+}));
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
