@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 
 // Ruta de inicio
 app.get('/users', (req, res) => {
-  res.send('¡Hola, mundo desde el backend!');
+  res.send('¡Hola, prueba index');
 });
 
 // Ruta de inicio
