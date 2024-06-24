@@ -7,9 +7,9 @@
     { "src": "api/getUserById.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/api/users", "dest": "api/users.js", "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"], "middlewares": ["_middleware"] },
-    { "src": "/api/users/create", "dest": "api/createUser.js", "methods": ["POST", "OPTIONS"], "middlewares": ["_middleware"] },
-    { "src": "/api/users/:userId", "dest": "api/getUserById.js", "methods": ["GET", "PUT", "DELETE", "OPTIONS"], "middlewares": ["_middleware"] },
-    { "src": "/(.*)", "dest": "index.js", "middlewares": ["_middleware"] }
+    { "src": "/api/users", "dest": "api/users.js" },
+    { "src": "/api/users/create", "dest": "api/createUser.js" },
+    { "src": "/api/users/:userId", "dest": "api/getUserById.js" },
+    { "src": "/(.*)", "dest": "index.js" }
   ]
 }
