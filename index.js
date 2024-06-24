@@ -32,7 +32,7 @@ const createUserRouter = require('./api/createUser');
 const getUserByIdRouter = require('./api/getUserById');
 
 app.use('/users', usersRouter); // Ruta para otras operaciones relacionadas con usuarios
-app.use('/api/users', createUserRouter); // Ruta para crear usuarios
+app.use('/api/users/create', createUserRouter);
 
 // Ruta para obtener un usuario por ID
 app.use('/api/users/:userId', getUserByIdRouter);
