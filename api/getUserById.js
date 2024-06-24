@@ -12,7 +12,7 @@ router.use((req, res, next) => {
 });
 
 // Ruta para obtener un usuario por ID
-router.get('/:userId', (req, res) => {
+router.get('users/:userId', (req, res) => {
   const userId = req.params.userId;
   res.json({ userId });
 });
