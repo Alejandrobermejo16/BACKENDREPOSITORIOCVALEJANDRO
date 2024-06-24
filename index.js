@@ -1,13 +1,9 @@
-// index.js
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
-
 
 app.use(cors({
   origin: '*', // Permitir solicitudes desde cualquier origen (ajustar según necesidades)
@@ -24,18 +20,14 @@ app.get('/', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
 });
 
-// Ruta de inicio
+// Ruta de prueba para /users
 app.get('/users', (req, res) => {
   res.send('¡Hola, prueba index');
 });
 
-app.get('api/createUsers', (req, res) => {
-  res.send('usuario creado');
-});
-
-// Ruta de inicio
-app.get('/api/users', (req, res) => {
-  res.send('¡Hola, mundo desde el backend!');
+// Ruta de prueba para /api/createUsers
+app.get('/api/createUsers', (req, res) => {
+  res.send('Usuario creado');
 });
 
 // Rutas de la API
