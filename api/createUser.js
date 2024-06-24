@@ -17,7 +17,7 @@ router.use((req, res, next) => {
 });
 
 // Ruta para crear un usuario (POST /api/users)
-router.post('/api/users', (req, res) => {
+router.post('https://backendabmprojects.vercel.app/api/users', (req, res) => {
   const { name, email, password } = req.body;
   // Aquí iría la lógica para crear un usuario en la base de datos
   res.status(201).json({ message: `Usuario creado: ${name}, ${email}, ${password}` });
