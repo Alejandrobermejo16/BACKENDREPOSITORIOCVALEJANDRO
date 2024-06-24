@@ -1,23 +1,15 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "index.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/users.js",
-      "use": "@vercel/node"
-    }
+    { "src": "index.js", "use": "@vercel/node" },
+    { "src": "api/users.js", "use": "@vercel/node" },
+    { "src": "api/createUser.js", "use": "@vercel/node" },
+    { "src": "api/getUserById.js", "use": "@vercel/node" }
   ],
   "routes": [
-    {
-      "src": "/api/users",
-      "dest": "/api/users.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.js"
-    }
+    { "src": "/api/users", "dest": "api/users.js" },
+    { "src": "/api/users/create", "dest": "api/createUser.js" },
+    { "src": "/api/users/:userId", "dest": "api/getUserById.js" },
+    { "src": "/(.*)", "dest": "index.js" }
   ]
 }
