@@ -38,7 +38,7 @@ const transporter = nodemailer.createTransport({
     to: destinatario,
     subject: asunto,
     text: mensaje
-  };
+  }; 
 
   // Enviar el correo
   transporter.sendMail(mailOptions, (error, info) => {
