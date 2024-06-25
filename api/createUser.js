@@ -1,3 +1,10 @@
+
+
+
+
+// EN ESTE ARCHIVO SE HACE BIEN EL POST Y EL GET
+
+
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
