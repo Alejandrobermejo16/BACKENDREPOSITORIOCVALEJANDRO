@@ -1,10 +1,8 @@
 const express = require('express');
+const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const createUserRouter = require('./api/createUser');
-const transporter = require('./email/transporter'); // Archivo donde configuraste nodemailer
-const db = require('./database/db'); // Archivo donde configuraste la conexión a MongoDB
-
 require('dotenv').config();
 
 const app = express();
@@ -19,7 +17,7 @@ app.use(cors({
 app.use(bodyParser.json());
 
 // Ruta para enviar correos
-app.post('/send-email', (req, res) => {
+app.post('/', (req, res) => {
   const { destinatario, asunto, mensaje } = req.body;
 
   // Configurar el contenido del correo
@@ -42,13 +40,24 @@ app.post('/send-email', (req, res) => {
   });
 });
 
-// Rutas de creación de usuario
-app.use('/api/users', createUserRouter);
-
 // Ruta de inicio
 app.get('/', (req, res) => {
   res.send('¡Hola, mundo desde el backend!');
 });
+
+// Ejemplo de ruta adicional para obtener productos (simulado)
+app.get('/products', (req, res) => {
+  const products = [
+    { id: 1, name: 'hammer' },
+    { id: 2, name: 'screwdriver' },
+    { id: 3, name: 'wrench' }
+  ];
+
+  res.json(products);
+});
+
+// Rutas de creación de usuario
+app.use('/api/users', createUserRouter);
 
 // Iniciar el servidor
 app.listen(PORT, () => {
