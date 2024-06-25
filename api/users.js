@@ -34,6 +34,23 @@ router.use(async (req, res, next) => {
   next();
 });
 
+// Ruta GET para obtener todos los usuarios
+router.get('/', async (req, res) => {
+  const dbClient = req.dbClient;
+
+  try {
+    const database = dbClient.db('abmUsers');
+    const collection = database.collection('users');
+
+    const users = await collection.find({}).toArray();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error);
+    res.status(500).json({ message: 'Error fetching users' });
+  }
+});
+
+
 // Ruta para crear usuarios
 router.post('/', async (req, res) => {
   const { name, email, password } = req.body;
