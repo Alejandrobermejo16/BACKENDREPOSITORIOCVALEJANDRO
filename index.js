@@ -22,9 +22,19 @@ app.use(bodyParser.json());
 app.post('/', (req, res) => {
   const { destinatario, asunto, mensaje } = req.body;
 
-  // Configurar el contenido del correo
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
+
+  // Configurar el transporter para enviar correos
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'alejandrobermejomendez170712@gmail.com',
+    pass: 'hkbj tofw gaoe xqpp'
+  }
+});
+
+   // Configurar el contenido del correo
+   const mailOptions = {
+    from: 'alejandrobermejomendez170712@gmail.com',
     to: destinatario,
     subject: asunto,
     text: mensaje
