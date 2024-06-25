@@ -1,29 +1,20 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
+const cors = require('cors');
+const createUserRouter = require('./api/createUser');
+require('dotenv').config();
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware para permitir solicitudes CORS desde un origen específico
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://abmprojects-7kay.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});
+app.use(cors({
+  origin: 'https://abmprojects-7kay.vercel.app'
+}));
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
-
-// Configurar el transporter para enviar correos
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'alejandrobermejomendez170712@gmail.com',
-    pass: 'hkbj tofw gaoe xqpp'
-  }
-});
 
 // Ruta para enviar correos
 app.post('/', (req, res) => {
@@ -31,7 +22,7 @@ app.post('/', (req, res) => {
 
   // Configurar el contenido del correo
   const mailOptions = {
-    from: 'alejandrobermejomendez170712@gmail.com',
+    from: process.env.EMAIL_USER,
     to: destinatario,
     subject: asunto,
     text: mensaje
@@ -59,11 +50,14 @@ app.get('/products', (req, res) => {
   const products = [
     { id: 1, name: 'hammer' },
     { id: 2, name: 'screwdriver' },
-    { id: 3, name: 'wrench' },
+    { id: 3, name: 'wrench' }
   ];
 
   res.json(products);
 });
+
+// Rutas de creación de usuario
+app.use('/api/users', createUserRouter);
 
 // Iniciar el servidor
 app.listen(PORT, () => {

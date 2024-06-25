@@ -1,18 +1,8 @@
 const express = require('express');
-const app = express()
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
-
-app.use(
-  cors({
-
-    origin: "https://abmprojects-7kay.vercel.app",
-  })
-
-  )
-
 
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
@@ -26,27 +16,34 @@ router.use(bodyParser.json());
 
 // Middleware para conectar a MongoDB antes de cada solicitud
 const connectMongoDB = async () => {
-  if (!client.topology || !client.topology.isConnected()) {
-    try {
+  try {
+    if (!client.isConnected()) {
       await client.connect();
       console.log('Conexión establecida correctamente con MongoDB');
-    } catch (error) {
-      console.error('Error al conectar con MongoDB:', error);
-      throw error;
     }
+  } catch (error) {
+    console.error('Error al conectar con MongoDB:', error);
+    throw error;
   }
 };
 
 // Middleware asincrónico para conectar MongoDB antes de cada solicitud
 router.use(async (req, res, next) => {
-  await connectMongoDB();
-  req.dbClient = client;
-  next();
+  try {
+    if (!client.topology || !client.topology.isConnected()) {
+      await client.connect();
+    }
+    req.dbClient = client;
+    next();
+  } catch (error) {
+    console.error('Error al conectar con MongoDB:', error);
+    res.status(500).json({ message: 'Error connecting to database' });
+  }
 });
 
 // Ruta para crear usuarios
-router.post('/api/users/create', async (req, res) => {
-  const { name, email } = req.body;
+router.post('/create', async (req, res) => {
+  const { name, email, password } = req.body;
   const dbClient = req.dbClient;
 
   try {
@@ -58,7 +55,7 @@ router.post('/api/users/create', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const newUser = { name, email };
+    const newUser = { name, email, password };
     const result = await collection.insertOne(newUser);
     res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
   } catch (error) {
