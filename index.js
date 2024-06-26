@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const createUserRouter = require('./api/createUser');
+const logguinUser = require('./api/logguin');
 require('dotenv').config();
 
 const app = express();
@@ -70,6 +71,7 @@ app.get('/products', (req, res) => {
 
 // Rutas de creación de usuario
 app.use('/api/users', createUserRouter);
+app.use('/api/users',logguinUser);
 
 // Iniciar el servidor
 app.listen(PORT, () => {

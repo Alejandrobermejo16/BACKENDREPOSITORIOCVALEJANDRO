@@ -7,6 +7,10 @@
     {
       "src": "api/createUser.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/logguin.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -17,6 +21,10 @@
     {
       "src": "/api/users/create",
       "dest": "/api/createUser.js"
+    },
+    {
+      "src": "/api/users/logguin",
+      "dest": "/api/logguin.js"
     }
   ]
 }
