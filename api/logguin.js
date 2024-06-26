@@ -36,8 +36,10 @@ router.use(async (req, res, next) => {
   }
 });
 // Ruta para verificar existencia de usuario y autenticación
+// Ruta para verificar existencia de usuario y autenticación
 router.post('/loggin', async (req, res) => {
   const { email, password } = req.body;
+  console.log('Datos recibidos:', { email, password }); // Agregamos este console.log para ver los datos recibidos
   const dbClient = req.dbClient;
   try {
     const database = dbClient.db('abmUsers');
@@ -58,6 +60,7 @@ router.post('/loggin', async (req, res) => {
     res.status(500).json({ message: 'Error authenticating user' });
   }
 });
+
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
