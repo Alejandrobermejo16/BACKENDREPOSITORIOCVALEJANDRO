@@ -2,6 +2,7 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const router = express.Router();
@@ -55,7 +56,10 @@ router.post('/create', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const newUser = { name, email, password }; // Incluye password en el objeto newUser
+    // Cifrar la contraseña antes de almacenarla
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = { name, email, password: hashedPassword };
+
     const result = await collection.insertOne(newUser);
     res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
   } catch (error) {
