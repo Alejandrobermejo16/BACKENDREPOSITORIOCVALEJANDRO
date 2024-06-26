@@ -36,35 +36,43 @@ router.use(async (req, res, next) => {
   }
 });
 // Ruta para verificar existencia de usuario y autenticación
-// Ruta para verificar existencia de usuario y autenticación
+const bcrypt = require('bcryptjs');
+
 // Ruta para verificar existencia de usuario y autenticación
 router.post('/loggin', async (req, res) => {
-  const { email, password } = req.body;
-  console.log('Datos recibidos:', { email, password }); // Imprime los datos recibidos en la consola del servidor
+  const { email, password: receivedPassword } = req.body; // Renombramos 'password' recibido desde el frontend como 'receivedPassword'
+  console.log('Datos recibidos desde el frontend:', { email, password: receivedPassword }); // Imprime los datos recibidos desde el frontend en la consola del servidor
   const dbClient = req.dbClient;
   try {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
+    
     // Buscar usuario por email
     const existingUser = await collection.findOne({ email });
-    const password = await collection.findOne({ password });
-
     if (!existingUser) {
-      return res.status(404).json({ message: 'User not found', receivedData: { email, password } });
+      return res.status(404).json({ message: 'User not found', receivedData: { email, receivedPassword } });
     }
+    
     // Verificar contraseña
-     // Verificar contraseña hasheada
-     const passwordMatch = await bcrypt.compare(password, existingUser.password);
-     if (!passwordMatch) {
-       return res.status(401).json({ message: 'Incorrect password', receivedData: { email, password } });
-     }
+    const passwordMatch = await bcrypt.compare(receivedPassword, existingUser.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Incorrect password', receivedData: { email, receivedPassword } });
+    }
+    
     // Usuario autenticado correctamente
-    res.status(200).json({ message: 'User authenticated successfully', userId: existingUser._id, receivedData: { email, password } });
+    res.status(200).json({ 
+      message: 'User authenticated successfully', 
+      userId: existingUser._id, 
+      receivedData: { email, receivedPassword }, // Datos recibidos del frontend
+      userData: existingUser // Datos del usuario almacenados en la base de datos
+    });
+    
   } catch (error) {
     console.error('Error al autenticar usuario:', error);
-    res.status(500).json({ message: 'Error authenticating user', receivedData: { email, password } });
+    res.status(500).json({ message: 'Error authenticating user', error: error.message });
   }
 });
+
 
 
 // Middleware de manejo de errores
