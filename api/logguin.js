@@ -37,9 +37,10 @@ router.use(async (req, res, next) => {
 });
 // Ruta para verificar existencia de usuario y autenticación
 // Ruta para verificar existencia de usuario y autenticación
+// Ruta para verificar existencia de usuario y autenticación
 router.post('/loggin', async (req, res) => {
   const { email, password } = req.body;
-  console.log('Datos recibidos:', { email, password }); // Agregamos este console.log para ver los datos recibidos
+  console.log('Datos recibidos:', { email, password }); // Imprime los datos recibidos en la consola del servidor
   const dbClient = req.dbClient;
   try {
     const database = dbClient.db('abmUsers');
@@ -47,19 +48,20 @@ router.post('/loggin', async (req, res) => {
     // Buscar usuario por email
     const existingUser = await collection.findOne({ email, password });
     if (!existingUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found', receivedData: { email, password } });
     }
     // Verificar contraseña
     if (existingUser.password !== password) {
-      return res.status(401).json({ message: 'Incorrect password' });
+      return res.status(401).json({ message: 'Incorrect password', receivedData: { email, password } });
     }
     // Usuario autenticado correctamente
-    res.status(200).json({ message: 'User authenticated successfully', userId: existingUser._id });
+    res.status(200).json({ message: 'User authenticated successfully', userId: existingUser._id, receivedData: { email, password } });
   } catch (error) {
     console.error('Error al autenticar usuario:', error);
-    res.status(500).json({ message: 'Error authenticating user' });
+    res.status(500).json({ message: 'Error authenticating user', receivedData: { email, password } });
   }
 });
+
 
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
