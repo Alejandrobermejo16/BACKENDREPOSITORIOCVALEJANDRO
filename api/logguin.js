@@ -71,7 +71,7 @@ router.post('/loggin', async (req, res) => {
     console.error('Error al autenticar usuario:', error);
     res.status(500).json({ message: 'Error authenticating user', error: error.message });
   }
-});
+}); 
 
 
 
