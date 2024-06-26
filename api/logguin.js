@@ -1,26 +1,15 @@
-
-
-
-
-// EN ESTE ARCHIVO SE HACE BIEN EL POST Y EL GET
-
-
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
-
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
-
 // Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
 router.use(cors());
-
 // Middleware para analizar el cuerpo de la solicitud JSON
 router.use(bodyParser.json());
-
 // Middleware para conectar a MongoDB antes de cada solicitud
 const connectMongoDB = async () => {
   try {
@@ -33,7 +22,6 @@ const connectMongoDB = async () => {
     throw error;
   }
 };
-
 // Middleware asincrónico para conectar MongoDB antes de cada solicitud
 router.use(async (req, res, next) => {
   try {
@@ -48,34 +36,33 @@ router.use(async (req, res, next) => {
   }
 });
 
-// Ruta obtener usuarios
-router.post('/logguin', async (req, res) => {
+// Ruta para verificar existencia de usuario y autenticación
+router.post('/loggin', async (req, res) => {
   const { email, password } = req.body;
   const dbClient = req.dbClient;
-
 
   try {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
-
-    const existingUser = await collection.findOne({ $or: [{ email }, { password }] });
-    if (existingUser) {
-      return res.status(200).json({ message: 'User already exists' });
+    // Buscar usuario por email
+    const existingUser = await collection.findOne({ email, password });
+    if (!existingUser) {
+      return res.status(404).json({ message: 'User not found' });
     }
-
-    const newUser = { email, password };
-    const result = await collection.insertOne(newUser);
-    res.status(400).json({ message: 'User not found', userId: result.insertedId });
+    // Verificar contraseña
+    if (existingUser.password !== password) {
+      return res.status(401).json({ message: 'Incorrect password' });
+    }
+    // Usuario autenticado correctamente
+    res.status(200).json({ message: 'User authenticated successfully', userId: existingUser._id });
   } catch (error) {
-    console.error('Error al crear usuario:', error);
-    res.status(500).json({ message: 'Error creating user' });
+    console.error('Error al autenticar usuario:', error);
+    res.status(500).json({ message: 'Error authenticating user' });
   }
 });
-
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
 });
-
 module.exports = router;
