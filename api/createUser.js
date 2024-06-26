@@ -51,6 +51,7 @@ router.post('/create', async (req, res) => {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
 
+    // Verificar si el usuario ya existe por nombre o correo electrónico
     const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
@@ -67,6 +68,7 @@ router.post('/create', async (req, res) => {
     res.status(500).json({ message: 'Error creating user' });
   }
 });
+
 
 // Ruta GET para obtener todos los usuarios
 router.get('/', async (req, res) => {
