@@ -52,13 +52,14 @@ router.post('/loggin', async (req, res) => {
 
     // Buscar usuario por email
     const existingUser = await collection.findOne({ email });
+    console.log(existingUser);
 
     if (!existingUser) {
       return res.status(404).json({ message: 'User not found' });
     }
 
         const isPasswordValid = await bcrypt.compare(password, existingUser.password); // Aquí se compara el hash almacenado
-
+        console.log(isPasswordValid);
     // Verificar contraseña
     if (isPasswordValid) {
       return res.status(401).json({ message: 'Incorrect password' });
