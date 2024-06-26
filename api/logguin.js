@@ -1,3 +1,10 @@
+
+
+
+
+// EN ESTE ARCHIVO SE HACE BIEN EL POST Y EL GET
+
+
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
@@ -41,34 +48,27 @@ router.use(async (req, res, next) => {
   }
 });
 
-// Ruta para verificar existencia de usuario y autenticación
-router.post('/loggin', async (req, res) => {
+// Ruta obtener usuarios
+router.post('/logguin', async (req, res) => {
   const { email, password } = req.body;
   const dbClient = req.dbClient;
+
 
   try {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
 
-    // Buscar usuario por email
-    const existingUser = await collection.findOne({ email, password });
-
-    if (!existingUser) {
-      return res.status(404).json({ message: 'User not found' });
+    const existingUser = await collection.findOne({ $or: [{ email }, { password }] });
+    if (existingUser) {
+      return res.status(200).json({ message: 'User already exists' });
     }
 
-    // Verificar contraseña
-    const isPasswordValid = await bcrypt.compare(password, existingUser.password); // Aquí se compara el hash almacenado
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Incorrect password' });
-    }
-
-    // Usuario autenticado correctamente
-    res.status(200).json({ message: 'User authenticated successfully', userId: existingUser._id });
-
+    const newUser = { email, password };
+    const result = await collection.insertOne(newUser);
+    res.status(400).json({ message: 'User not found', userId: result.insertedId });
   } catch (error) {
-    console.error('Error al autenticar usuario:', error);
-    res.status(500).json({ message: 'Error authenticating user' });
+    console.error('Error al crear usuario:', error);
+    res.status(500).json({ message: 'Error creating user' });
   }
 });
 
