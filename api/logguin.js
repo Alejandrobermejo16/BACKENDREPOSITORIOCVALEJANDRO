@@ -42,7 +42,7 @@ router.use(async (req, res, next) => {
 });
 
 // Ruta para verificar existencia de usuario y autenticación
-router.post('/login', async (req, res) => {
+router.post('/loggin', async (req, res) => {
   const { email, password } = req.body;
   const dbClient = req.dbClient;
 
