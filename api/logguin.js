@@ -46,8 +46,9 @@ router.post('/loggin', async (req, res) => {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
     // Buscar usuario por email
-    // Buscar usuario por email
     const existingUser = await collection.findOne({ email });
+    const password = await collection.findOne({ password });
+
     if (!existingUser) {
       return res.status(404).json({ message: 'User not found', receivedData: { email, password } });
     }
