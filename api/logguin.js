@@ -2,19 +2,14 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const bcrypt = require('bcrypt');
 require('dotenv').config();
-
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
-
 // Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
 router.use(cors());
-
 // Middleware para analizar el cuerpo de la solicitud JSON
 router.use(bodyParser.json());
-
 // Middleware para conectar a MongoDB antes de cada solicitud
 const connectMongoDB = async () => {
   try {
@@ -27,7 +22,6 @@ const connectMongoDB = async () => {
     throw error;
   }
 };
-
 // Middleware asincrónico para conectar MongoDB antes de cada solicitud
 router.use(async (req, res, next) => {
   try {
@@ -41,43 +35,32 @@ router.use(async (req, res, next) => {
     res.status(500).json({ message: 'Error connecting to database' });
   }
 });
-
 // Ruta para verificar existencia de usuario y autenticación
 router.post('/loggin', async (req, res) => {
   const { email, password } = req.body;
   const dbClient = req.dbClient;
-
   try {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
-
     // Buscar usuario por email
-    const existingUser = await collection.findOne({ email });
-
+    const existingUser = await collection.findOne({ email, password });
     if (!existingUser) {
       return res.status(404).json({ message: 'User not found' });
     }
-
-    // Comparar la contraseña ingresada con el hash almacenado
-    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
-
-    if (!isPasswordValid) {
+    // Verificar contraseña
+    if (existingUser.password !== password) {
       return res.status(401).json({ message: 'Incorrect password' });
     }
-
     // Usuario autenticado correctamente
     res.status(200).json({ message: 'User authenticated successfully', userId: existingUser._id });
-
   } catch (error) {
     console.error('Error al autenticar usuario:', error);
     res.status(500).json({ message: 'Error authenticating user' });
   }
 });
-
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
 });
-
 module.exports = router;

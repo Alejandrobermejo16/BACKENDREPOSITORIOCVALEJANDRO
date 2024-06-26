@@ -2,18 +2,15 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
-
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
-
 // Middleware para permitir solicitudes CORS desde cualquier origen (solo para pruebas locales)
 router.use(cors());
-
 // Middleware para analizar el cuerpo de la solicitud JSON
 router.use(bodyParser.json());
-
 // Middleware para conectar a MongoDB antes de cada solicitud
 const connectMongoDB = async () => {
   try {
@@ -26,7 +23,6 @@ const connectMongoDB = async () => {
     throw error;
   }
 };
-
 // Middleware asincrónico para conectar MongoDB antes de cada solicitud
 router.use(async (req, res, next) => {
   try {
@@ -40,12 +36,10 @@ router.use(async (req, res, next) => {
     res.status(500).json({ message: 'Error connecting to database' });
   }
 });
-
 // Ruta para crear usuarios
 router.post('/create', async (req, res) => {
   const { name, email, password } = req.body;
   const dbClient = req.dbClient;
-
   try {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
@@ -54,8 +48,9 @@ router.post('/create', async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
-
-    const newUser = { name, email, password }; // Incluye password en el objeto newUser
+    // Cifrar la contraseña antes de almacenarla
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = { name, email, password: hashedPassword };
     const result = await collection.insertOne(newUser);
     res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
   } catch (error) {
@@ -67,11 +62,9 @@ router.post('/create', async (req, res) => {
 // Ruta GET para obtener todos los usuarios
 router.get('/', async (req, res) => {
   const dbClient = req.dbClient;
-
   try {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
-
     const users = await collection.find({}).toArray();
     res.status(200).json(users);
   } catch (error) {
@@ -79,11 +72,9 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Error fetching users' });
   }
 });
-
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
 });
-
 module.exports = router;
