@@ -1,3 +1,10 @@
+
+
+
+
+// EN ESTE ARCHIVO SE HACE BIEN EL POST Y EL GET
+
+
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
@@ -46,24 +53,6 @@ router.post('/create', async (req, res) => {
   const { name, email, password } = req.body;
   const dbClient = req.dbClient;
 
-  try {
-    const database = dbClient.db('abmUsers');
-    const collection = database.collection('users');
-
-    const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    const newUser = { name, email, password }; // Incluye password en el objeto newUser
-    const result = await collection.insertOne(newUser);
-    res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
-  } catch (error) {
-    console.error('Error al crear usuario:', error);
-    res.status(500).json({ message: 'Error creating user' });
-  }
-});
-
 // Ruta GET para obtener todos los usuarios
 router.get('/', async (req, res) => {
   const dbClient = req.dbClient;
@@ -77,6 +66,25 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
     res.status(500).json({ message: 'Error fetching users' });
+  }
+});
+ 
+
+  try {
+    const database = dbClient.db('abmUsers');
+    const collection = database.collection('users');
+
+    const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    const newUser = { name, email, password };
+    const result = await collection.insertOne(newUser);
+    res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
+  } catch (error) {
+    console.error('Error al crear usuario:', error);
+    res.status(500).json({ message: 'Error creating user' });
   }
 });
 
