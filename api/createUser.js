@@ -2,7 +2,6 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const router = express.Router();
@@ -51,16 +50,12 @@ router.post('/create', async (req, res) => {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
 
-    // Verificar si el usuario ya existe por nombre o correo electrónico
     const existingUser = await collection.findOne({ $or: [{ name }, { email }] });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Cifrar la contraseña antes de almacenarla
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = { name, email, password: hashedPassword };
-
+    const newUser = { name, email, password }; // Incluye password en el objeto newUser
     const result = await collection.insertOne(newUser);
     res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
   } catch (error) {
@@ -68,7 +63,6 @@ router.post('/create', async (req, res) => {
     res.status(500).json({ message: 'Error creating user' });
   }
 });
-
 
 // Ruta GET para obtener todos los usuarios
 router.get('/', async (req, res) => {
