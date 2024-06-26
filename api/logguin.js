@@ -46,14 +46,17 @@ router.post('/loggin', async (req, res) => {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('users');
     // Buscar usuario por email
-    const existingUser = await collection.findOne({ email, password });
+    // Buscar usuario por email
+    const existingUser = await collection.findOne({ email });
     if (!existingUser) {
       return res.status(404).json({ message: 'User not found', receivedData: { email, password } });
     }
     // Verificar contraseña
-    if (existingUser.password !== password) {
-      return res.status(401).json({ message: 'Incorrect password', receivedData: { email, password } });
-    }
+     // Verificar contraseña hasheada
+     const passwordMatch = await bcrypt.compare(password, existingUser.password);
+     if (!passwordMatch) {
+       return res.status(401).json({ message: 'Incorrect password', receivedData: { email, password } });
+     }
     // Usuario autenticado correctamente
     res.status(200).json({ message: 'User authenticated successfully', userId: existingUser._id, receivedData: { email, password } });
   } catch (error) {
