@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const createUserRouter = require('./api/createUser');
 const logguinUser = require('./api/logguin');
+const calUser = require('./api/calUser')
 require('dotenv').config();
 
 const app = express();
@@ -59,8 +60,11 @@ app.get('/', (req, res) => {
 });
 
 // Rutas de creación de usuario
+//rutas que estarán disponibles bajo el prefijo /api/users.
+//para llamar desde frontal , la llamada será a /api/users/endpoint del archivo, por ejemplo, /logguin que esta definido en el archivo de logguinUser
 app.use('/api/users', createUserRouter);
 app.use('/api/users',logguinUser);
+app.use('/api/users',calUser);
 
 // Iniciar el servidor
 app.listen(PORT, () => {
