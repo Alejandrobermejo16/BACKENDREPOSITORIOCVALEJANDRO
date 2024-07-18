@@ -30,10 +30,10 @@ router.use(async (req, res, next) => {
 
 // Ruta para recibir y guardar las calorías
 router.post('/cal', async (req, res) => {
-  const { name, calories } = req.body;
+  const { userEmail, calories } = req.body;
 
-  if (!name || !calories) {
-    return res.status(400).json({ message: 'name and calories are required' });
+  if (!userEmail || !calories) {
+    return res.status(400).json({ message: 'mail and calories are required' });
   }
 
   try {
@@ -42,7 +42,6 @@ router.post('/cal', async (req, res) => {
 
     // Actualiza el documento del usuario con las calorías
     const result = await collection.updateOne(
-      { name: name },
       { $push: { calories: { value: calories, date: new Date() } } },
       { upsert: true } // Crea un nuevo documento si no existe
     );
