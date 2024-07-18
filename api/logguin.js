@@ -41,7 +41,6 @@ const bcrypt = require('bcryptjs');
 // Ruta para verificar existencia de usuario y autenticación
 router.post('/loggin', async (req, res) => {
   const { email, password: receivedPassword } = req.body; // Renombramos 'password' recibido desde el frontend como 'receivedPassword'
-  console.log('Datos recibidos desde el frontend:', { email, password: receivedPassword }); // Imprime los datos recibidos desde el frontend en la consola del servidor
   const dbClient = req.dbClient;
   try {
     const database = dbClient.db('abmUsers');
