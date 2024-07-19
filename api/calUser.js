@@ -96,7 +96,7 @@ router.post('/cal', async (req, res) => {
     // Insertar el nuevo registro de calorías
     const result = await collection.updateOne(
       { email: userEmail },
-      { $set: { calories: [{ value: calories, date: new Date() }] } },
+      { $push: { calories: { value: calories, date: new Date() } } }, // Cambiado de $set a $push
       { upsert: true }
     );
 
