@@ -28,7 +28,7 @@ router.post('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || !calories) {
-    return res.status(400).json({ message: 'mail and calories are required' });
+    return res.status(400).json({ message: 'Email and calories are required' });
   }
 
   try {
@@ -36,10 +36,14 @@ router.post('/cal', async (req, res) => {
     const collection = db.collection('users');
 
     const result = await collection.updateOne(
-      { userEmail }, // Filtro para encontrar el documento
-      { $push: { calories: { value: calories, date: new Date() } } }, // Actualización
-      { upsert: true } // Crear un nuevo documento si no existe
+      { email: userEmail }, // Usamos el campo `email` como filtro
+      { $push: { calories: { value: calories, date: new Date() } } }, // Agregamos las calorías
+      { upsert: false } // No crear un nuevo documento si no existe
     );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     res.status(201).json({ message: 'Calories added successfully', data: result });
   } catch (error) {
