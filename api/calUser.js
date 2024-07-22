@@ -117,7 +117,7 @@ router.post('/cal', async (req, res) => {
 app.use('/api', router);
 
 // Configuración del cron job para restablecer las calorías a 0
-cron.schedule('32 16 * * *', async () => {
+cron.schedule('39 16 * * *', async () => {
   console.log('Cron job ejecutándose para restablecer calorías a 0...');
   try {
     await client.connect();
@@ -148,3 +148,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
+
