@@ -122,7 +122,7 @@ app.post('/api/resetCalories', async (req, res) => {
 });
 
 // Configuración del cron job para restablecer calorías a 00:00
-cron.schedule('0 13 * * *', async () => {
+cron.schedule('0 0 * * *', async () => {
   try {
     await client.connect();
     const db = client.db('abmUsers');
