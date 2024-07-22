@@ -109,16 +109,21 @@ router.post('/cal', async (req, res) => {
   }
 });
 
-// Cron job para restablecer las calorías a las 15:05 cada día
+// Cron job para restablecer las calorías a las 15:35 cada día
 cron.schedule('35 15 * * *', async () => {
+  console.log('Cron job iniciado para restablecer las calorías a las 15:35');
   try {
-    await client.connect();
+    if (!client.topology || !client.topology.isConnected()) {
+      await client.connect();
+      console.log('Conexión establecida correctamente con MongoDB dentro del cron job');
+    }
+    
     const db = client.db('abmUsers');
     const collection = db.collection('users');
 
     // Restablecer las calorías de todos los usuarios a 0
-    await collection.updateMany({}, { $set: { calories: [] } });
-    console.log('Calorías de todos los usuarios restablecidas a 0 a las 15:05');
+    const result = await collection.updateMany({}, { $set: { calories: [] } });
+    console.log(`Calorías de todos los usuarios restablecidas a 0. Número de documentos modificados: ${result.modifiedCount}`);
   } catch (error) {
     console.error('Error al restablecer las calorías:', error);
   }
