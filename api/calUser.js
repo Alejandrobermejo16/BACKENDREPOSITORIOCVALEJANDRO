@@ -1,35 +1,15 @@
-const cron = require('node-cron');
-const { MongoClient } = require('mongodb');
-require('dotenv').config();
-
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
-
-// Configura el cron job para que se ejecute a las 15:05 todos los días
-cron.schedule('15 15 * * *', async () => {
-  try {
-    await client.connect();
-    const db = client.db('abmUsers');
-    const collection = db.collection('users');
-
-    // Restablecer las calorías de todos los usuarios a 0
-    await collection.updateMany({}, { $set: { calories: [] } });
-    console.log('Calorías de todos los usuarios restablecidas a 0 a las 15:05');
-  } catch (error) {
-    console.error('Error al restablecer las calorías:', error);
-  }
-});
-
-// Código del servidor Express
 const express = require('express');
+const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config();
 const router = express.Router();
-const app = express();
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
+const cron = require('node-cron');
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(router);
+router.use(cors());
+router.use(bodyParser.json());
 
 router.use(async (req, res, next) => {
   try {
@@ -129,11 +109,10 @@ router.post('/cal', async (req, res) => {
   }
 });
 
+
 router.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
+module.exports = router;
