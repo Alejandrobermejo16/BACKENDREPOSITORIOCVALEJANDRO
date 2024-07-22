@@ -108,22 +108,6 @@ router.post('/cal', async (req, res) => {
   }
 });
 
-
-// Configuración del cron job para restablecer calorías a 00:00
-cron.schedule('0 0 * * *', async () => {
-  try {
-    await client.connect();
-    const db = client.db('abmUsers');
-    const collection = db.collection('users');
-
-    // Restablecer las calorías de todos los usuarios a 0
-    await collection.updateMany({}, { $set: { calories: [] } });
-    console.log('Calorías de todos los usuarios restablecidas a 0');
-  } catch (error) {
-    console.error('Error al restablecer las calorías:', error);
-  }
-});
-
 router.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
