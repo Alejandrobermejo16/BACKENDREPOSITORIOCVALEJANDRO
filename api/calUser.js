@@ -110,7 +110,7 @@ router.post('/cal', async (req, res) => {
 });
 
 // Cron job para restablecer las calorías a las 15:35 cada día
-cron.schedule('35 15 * * *', async () => {
+cron.schedule('0 16 * * *', async () => {
   console.log('Cron job iniciado para restablecer las calorías a las 15:35');
   try {
     if (!client.topology || !client.topology.isConnected()) {
