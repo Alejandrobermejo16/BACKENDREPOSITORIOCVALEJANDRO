@@ -109,9 +109,8 @@ router.post('/cal', async (req, res) => {
   }
 });
 
-// Cron job para restablecer las calorías a las 15:35 cada día
-cron.schedule('0 16 * * *', async () => {
-  console.log('Cron job iniciado para restablecer las calorías a las 15:35');
+cron.schedule('* * * * *', async () => {
+  console.log('Cron job iniciado para restablecer las calorías cada minuto');
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
@@ -128,6 +127,7 @@ cron.schedule('0 16 * * *', async () => {
     console.error('Error al restablecer las calorías:', error);
   }
 });
+
 
 router.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
