@@ -2,19 +2,15 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const cron = require('node-cron');
 require('dotenv').config();
-
-// Inicialización del servidor Express
-const app = express();
+const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
-app.use(cors());
-app.use(bodyParser.json());
+router.use(cors());
+router.use(bodyParser.json());
 
-// Middleware para conectar con MongoDB
-app.use(async (req, res, next) => {
+router.use(async (req, res, next) => {
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
@@ -28,8 +24,8 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Endpoint para verificar calorías
-app.get('/api/cal', async (req, res) => {
+// Verificar si el usuario tiene registros de calorías
+router.get('/cal', async (req, res) => {
   const { userEmail } = req.query;
 
   if (!userEmail) {
@@ -39,6 +35,8 @@ app.get('/api/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
+
+    // Buscar el usuario y verificar si tiene calorías registradas
     const user = await collection.findOne(
       { email: userEmail, 'calories.0': { $exists: true } }
     );
@@ -54,8 +52,8 @@ app.get('/api/cal', async (req, res) => {
   }
 });
 
-// Endpoint para actualizar calorías
-app.put('/api/cal', async (req, res) => {
+// Actualizar calorías (PUT)
+router.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
@@ -65,6 +63,8 @@ app.put('/api/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
+
+    // Actualizar el valor de las calorías del usuario
     const result = await collection.updateOne(
       { email: userEmail },
       { $set: { 'calories.$[elem].value': calories, 'calories.$[elem].date': new Date() } },
@@ -82,8 +82,8 @@ app.put('/api/cal', async (req, res) => {
   }
 });
 
-// Endpoint para crear un nuevo registro de calorías
-app.post('/api/cal', async (req, res) => {
+// Crear un nuevo registro de calorías (POST)
+router.post('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
@@ -93,6 +93,8 @@ app.post('/api/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
+
+    // Insertar el nuevo registro de calorías si no existe
     const result = await collection.updateOne(
       { email: userEmail },
       { $push: { calories: { value: calories, date: new Date() } } },
@@ -106,49 +108,10 @@ app.post('/api/cal', async (req, res) => {
   }
 });
 
-// Endpoint para restablecer las calorías a 0
-app.post('/api/resetCalories', async (req, res) => {
-  try {
-    const db = req.dbClient.db('abmUsers');
-    const collection = db.collection('users');
-
-    // Restablecer las calorías de todos los usuarios a 0
-    await collection.updateMany({}, { $set: { calories: [] } });
-    res.status(200).json({ message: 'Calorías restablecidas' });
-  } catch (error) {
-    console.error('Error al restablecer las calorías:', error);
-    res.status(500).json({ message: 'Error al restablecer las calorías' });
-  }
+router.use((err, req, res, next) => {
+  console.error('Error in Express middleware:', err);
+  res.status(500).json({ message: 'Something broke!' });
 });
 
-cron.schedule('19 16 * * *', async () => {
-  console.log('Cron job ejecutándose para restablecer calorías a 0...');
-  try {
-    await client.connect();
-    const db = client.db('abmUsers');
-    const collection = db.collection('users');
-
-    // Actualizar el valor de las calorías a 0 en todos los registros
-    const result = await collection.updateMany(
-      { 'calories.value': { $exists: true } }, // Filtro para documentos que tienen calorías
-      { $set: { 'calories.$[elem].value': 0 } }, // Actualiza el valor a 0
-      { arrayFilters: [{ 'elem.value': { $exists: true } }] } // Filtro para los elementos en el array
-    );
-    
-    console.log('Calorías de todos los usuarios restablecidas a 0');
-    console.log('Resultado de la actualización:', result);
-  } catch (error) {
-    console.error('Error al restablecer las calorías:', error);
-  }
-});
-
-
-// Manejo de errores en middleware
-app.use((err, req, res, next) => {
-  console.error('Error en middleware de Express:', err);
-  res.status(500).json({ message: '¡Algo salió mal!' });
-});
-
-module.exports = app;
-
+module.exports = router;
 
