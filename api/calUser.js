@@ -2,11 +2,11 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const cron = require('node-cron');
 require('dotenv').config();
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
-const cron = require('node-cron');
 
 router.use(cors());
 router.use(bodyParser.json());
@@ -109,6 +109,20 @@ router.post('/cal', async (req, res) => {
   }
 });
 
+// Cron job para restablecer las calorías a las 15:05 cada día
+cron.schedule('35 15 * * *', async () => {
+  try {
+    await client.connect();
+    const db = client.db('abmUsers');
+    const collection = db.collection('users');
+
+    // Restablecer las calorías de todos los usuarios a 0
+    await collection.updateMany({}, { $set: { calories: [] } });
+    console.log('Calorías de todos los usuarios restablecidas a 0 a las 15:05');
+  } catch (error) {
+    console.error('Error al restablecer las calorías:', error);
+  }
+});
 
 router.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
