@@ -6,6 +6,7 @@ require('dotenv').config();
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
+const cron = require('node-cron');
 
 router.use(cors());
 router.use(bodyParser.json());
@@ -105,6 +106,22 @@ router.post('/cal', async (req, res) => {
   } catch (error) {
     console.error('Error creating calories:', error);
     res.status(500).json({ message: 'Error creating calories' });
+  }
+});
+
+
+// Configura el cron job para que se ejecute a la 1 PM todos los días
+cron.schedule('0 13 * * *', async () => {
+  try {
+    await client.connect();
+    const db = client.db('abmUsers');
+    const collection = db.collection('users');
+
+    // Restablecer las calorías de todos los usuarios a 0
+    await collection.updateMany({}, { $set: { calories: [] } });
+    console.log('Calorías de todos los usuarios restablecidas a 0 a las 1 PM');
+  } catch (error) {
+    console.error('Error al restablecer las calorías:', error);
   }
 });
 
