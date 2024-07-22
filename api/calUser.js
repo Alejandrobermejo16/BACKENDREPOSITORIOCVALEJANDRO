@@ -121,19 +121,27 @@ app.post('/api/resetCalories', async (req, res) => {
   }
 });
 
-// Configuración del cron job para restablecer calorías a 00:00
-cron.schedule('6 16 * * *', async () => {  try {
+cron.schedule('19 16 * * *', async () => {
+  console.log('Cron job ejecutándose para restablecer calorías a 0...');
+  try {
     await client.connect();
     const db = client.db('abmUsers');
     const collection = db.collection('users');
 
-    // Restablecer las calorías de todos los usuarios a 0
-    await collection.updateMany({}, { $set: { calories: [] } });
+    // Actualizar el valor de las calorías a 0 en todos los registros
+    const result = await collection.updateMany(
+      { 'calories.value': { $exists: true } }, // Filtro para documentos que tienen calorías
+      { $set: { 'calories.$[elem].value': 0 } }, // Actualiza el valor a 0
+      { arrayFilters: [{ 'elem.value': { $exists: true } }] } // Filtro para los elementos en el array
+    );
+    
     console.log('Calorías de todos los usuarios restablecidas a 0');
+    console.log('Resultado de la actualización:', result);
   } catch (error) {
     console.error('Error al restablecer las calorías:', error);
   }
 });
+
 
 // Manejo de errores en middleware
 app.use((err, req, res, next) => {
