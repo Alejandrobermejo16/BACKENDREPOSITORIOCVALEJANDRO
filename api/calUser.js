@@ -2,15 +2,19 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const cron = require('node-cron'); // Asegúrate de tener esta dependencia instalada
 require('dotenv').config();
-const router = express.Router();
+
+const app = express();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
-router.use(cors());
-router.use(bodyParser.json());
+// Configuración del middleware
+app.use(cors());
+app.use(bodyParser.json());
 
-router.use(async (req, res, next) => {
+// Middleware para conectar con MongoDB
+app.use(async (req, res, next) => {
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
@@ -24,7 +28,9 @@ router.use(async (req, res, next) => {
   }
 });
 
-// Verificar si el usuario tiene registros de calorías
+// Router con las rutas para GET, POST y PUT
+const router = express.Router();
+
 router.get('/cal', async (req, res) => {
   const { userEmail } = req.query;
 
@@ -108,10 +114,37 @@ router.post('/cal', async (req, res) => {
   }
 });
 
-router.use((err, req, res, next) => {
-  console.error('Error in Express middleware:', err);
-  res.status(500).json({ message: 'Something broke!' });
+app.use('/api', router);
+
+// Configuración del cron job para restablecer las calorías a 0
+cron.schedule('32 16 * * *', async () => {
+  console.log('Cron job ejecutándose para restablecer calorías a 0...');
+  try {
+    await client.connect();
+    const db = client.db('abmUsers');
+    const collection = db.collection('users');
+
+    // Actualizar el valor de las calorías a 0 en todos los registros
+    const result = await collection.updateMany(
+      { 'calories.value': { $exists: true } }, // Filtro para documentos que tienen calorías
+      { $set: { 'calories.$[elem].value': 0 } }, // Actualiza el valor a 0
+      { arrayFilters: [{ 'elem.value': { $exists: true } }] } // Filtro para los elementos en el array
+    );
+
+    console.log('Calorías de todos los usuarios restablecidas a 0');
+    console.log('Resultado de la actualización:', result);
+  } catch (error) {
+    console.error('Error al restablecer las calorías:', error);
+  }
 });
 
-module.exports = router;
+// Manejo de errores en middleware
+app.use((err, req, res, next) => {
+  console.error('Error en middleware de Express:', err);
+  res.status(500).json({ message: '¡Algo salió mal!' });
+});
 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
