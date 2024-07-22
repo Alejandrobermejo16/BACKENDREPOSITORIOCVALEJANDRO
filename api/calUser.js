@@ -31,7 +31,7 @@ app.use(async (req, res, next) => {
 app.use('/api', require('./routes')); // Ajusta la ruta según la ubicación del archivo de rutas
 
 // Cron job para restablecer calorías a 0
-cron.schedule('19 16 * * *', async () => {
+cron.schedule('27 16 * * *', async () => {
   console.log('Cron job ejecutándose para restablecer calorías a 0...');
   try {
     await client.connect();
