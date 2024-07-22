@@ -56,7 +56,7 @@ router.get('/cal', async (req, res) => {
 router.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
-  if (!userEmail || !calories) {
+  if (!userEmail || calories == null) {
     return res.status(400).json({ message: 'Email and calories are required' });
   }
 
@@ -64,17 +64,18 @@ router.put('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
-    // Actualizar el registro de calorías del usuario
+    // Actualizar el valor de las calorías del usuario
     const result = await collection.updateOne(
       { email: userEmail },
-      { $push: { calories: { value: calories, date: new Date() } } }
+      { $set: { 'calories.$[elem].value': calories, 'calories.$[elem].date': new Date() } },
+      { arrayFilters: [{ 'elem.value': { $exists: true } }] }
     );
 
     if (result.modifiedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
     }
 
-    res.status(404).json({ message: 'User not found' });
+    res.status(404).json({ message: 'User not found or no calories to update' });
   } catch (error) {
     console.error('Error updating calories:', error);
     res.status(500).json({ message: 'Error updating calories' });
@@ -85,7 +86,7 @@ router.put('/cal', async (req, res) => {
 router.post('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
-  if (!userEmail || !calories) {
+  if (!userEmail || calories == null) {
     return res.status(400).json({ message: 'Email and calories are required' });
   }
 
@@ -93,10 +94,10 @@ router.post('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
-    // Insertar el nuevo registro de calorías
+    // Insertar el nuevo registro de calorías si no existe
     const result = await collection.updateOne(
       { email: userEmail },
-      { $push: { calories: { value: calories, date: new Date() } } }, // Cambiado de $set a $push
+      { $push: { calories: { value: calories, date: new Date() } } },
       { upsert: true }
     );
 
