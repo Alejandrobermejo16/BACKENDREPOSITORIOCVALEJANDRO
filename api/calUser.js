@@ -111,7 +111,7 @@ router.post('/cal', async (req, res) => {
 
 
 // Configura el cron job para que se ejecute a la 1 PM todos los días
-cron.schedule('0 13 * * *', async () => {
+cron.schedule('5 15 * * *', async () => {
   try {
     await client.connect();
     const db = client.db('abmUsers');
