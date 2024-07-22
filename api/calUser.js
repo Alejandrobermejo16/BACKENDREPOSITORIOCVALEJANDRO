@@ -4,14 +4,17 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const cron = require('node-cron');
 require('dotenv').config();
-const router = express.Router();
+
+// Inicialización del servidor Express
+const app = express();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
-router.use(cors());
-router.use(bodyParser.json());
+app.use(cors());
+app.use(bodyParser.json());
 
-router.use(async (req, res, next) => {
+// Middleware para conectar con MongoDB
+app.use(async (req, res, next) => {
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
@@ -25,8 +28,8 @@ router.use(async (req, res, next) => {
   }
 });
 
-// Verificar si el usuario tiene registros de calorías
-router.get('/cal', async (req, res) => {
+// Endpoint para verificar calorías
+app.get('/api/cal', async (req, res) => {
   const { userEmail } = req.query;
 
   if (!userEmail) {
@@ -36,8 +39,6 @@ router.get('/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-
-    // Buscar el usuario y verificar si tiene calorías registradas
     const user = await collection.findOne(
       { email: userEmail, 'calories.0': { $exists: true } }
     );
@@ -53,8 +54,8 @@ router.get('/cal', async (req, res) => {
   }
 });
 
-// Actualizar calorías (PUT)
-router.put('/cal', async (req, res) => {
+// Endpoint para actualizar calorías
+app.put('/api/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
@@ -64,8 +65,6 @@ router.put('/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-
-    // Actualizar el valor de las calorías del usuario
     const result = await collection.updateOne(
       { email: userEmail },
       { $set: { 'calories.$[elem].value': calories, 'calories.$[elem].date': new Date() } },
@@ -83,8 +82,8 @@ router.put('/cal', async (req, res) => {
   }
 });
 
-// Crear un nuevo registro de calorías (POST)
-router.post('/cal', async (req, res) => {
+// Endpoint para crear un nuevo registro de calorías
+app.post('/api/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
@@ -94,8 +93,6 @@ router.post('/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-
-    // Insertar el nuevo registro de calorías si no existe
     const result = await collection.updateOne(
       { email: userEmail },
       { $push: { calories: { value: calories, date: new Date() } } },
@@ -109,29 +106,42 @@ router.post('/cal', async (req, res) => {
   }
 });
 
-cron.schedule('* * * * *', async () => {
-  console.log('Cron job iniciado para restablecer las calorías cada minuto');
+// Endpoint para restablecer las calorías a 0
+app.post('/api/resetCalories', async (req, res) => {
   try {
-    if (!client.topology || !client.topology.isConnected()) {
-      await client.connect();
-      console.log('Conexión establecida correctamente con MongoDB dentro del cron job');
-    }
-    
+    const db = req.dbClient.db('abmUsers');
+    const collection = db.collection('users');
+
+    // Restablecer las calorías de todos los usuarios a 0
+    await collection.updateMany({}, { $set: { calories: [] } });
+    res.status(200).json({ message: 'Calorías restablecidas' });
+  } catch (error) {
+    console.error('Error al restablecer las calorías:', error);
+    res.status(500).json({ message: 'Error al restablecer las calorías' });
+  }
+});
+
+// Configuración del cron job para restablecer calorías a 00:00
+cron.schedule('0 0 * * *', async () => {
+  try {
+    await client.connect();
     const db = client.db('abmUsers');
     const collection = db.collection('users');
 
     // Restablecer las calorías de todos los usuarios a 0
-    const result = await collection.updateMany({}, { $set: { calories: [] } });
-    console.log(`Calorías de todos los usuarios restablecidas a 0. Número de documentos modificados: ${result.modifiedCount}`);
+    await collection.updateMany({}, { $set: { calories: [] } });
+    console.log('Calorías de todos los usuarios restablecidas a 0');
   } catch (error) {
     console.error('Error al restablecer las calorías:', error);
   }
 });
 
-
-router.use((err, req, res, next) => {
-  console.error('Error in Express middleware:', err);
-  res.status(500).json({ message: 'Something broke!' });
+// Manejo de errores en middleware
+app.use((err, req, res, next) => {
+  console.error('Error en middleware de Express:', err);
+  res.status(500).json({ message: '¡Algo salió mal!' });
 });
 
-module.exports = router;
+module.exports = app;
+
+
