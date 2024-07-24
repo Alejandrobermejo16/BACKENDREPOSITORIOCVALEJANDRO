@@ -1,10 +1,8 @@
 const { MongoClient } = require('mongodb');
-const cron = require('node-cron');
 require('dotenv').config();
 
-// Configuración de la base de datos
 const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const client = new MongoClient(uri);
 
 const connectDB = async () => {
   try {
@@ -18,22 +16,26 @@ const connectDB = async () => {
   }
 };
 
-// Configuración del cron job para actualizar calorías
-cron.schedule('* * * * *', async () => {
-  try {
-    const db = client.db('abmUsers');
-    const collection = db.collection('users');
+module.exports = async (req, res) => {
+  if (req.method === 'GET') {
+    await connectDB();
+    try {
+      const db = client.db('abmUsers');
+      const collection = db.collection('users');
 
-    const result = await collection.updateMany(
-      { 'calories.value': { $exists: true } },
-      { $set: { 'calories.$[].value': 0 } }
-    );
+      const result = await collection.updateMany(
+        { 'calories.value': { $exists: true } },
+        { $set: { 'calories.$[].value': 0 } }
+      );
 
-    console.log(`Actualización de calorías a 0 completada para ${result.modifiedCount} usuarios.`);
-  } catch (error) {
-    console.error('Error en el cron job:', error);
+      console.log(`Actualización de calorías a 0 completada para ${result.modifiedCount} usuarios.`);
+      res.status(200).send('Calorías actualizadas a 0');
+    } catch (error) {
+      console.error('Error en el cron job:', error);
+      res.status(500).send('Error actualizando calorías');
+    }
+  } else {
+    res.setHeader('Allow', ['GET']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-});
-
-// Conectar a la base de datos y configurar el cron job
-connectDB();
+};
