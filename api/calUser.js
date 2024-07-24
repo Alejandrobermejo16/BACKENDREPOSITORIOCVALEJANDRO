@@ -109,25 +109,7 @@ router.post('/cal', async (req, res) => {
   }
 });
 
-// Configurar la tarea cron
-cron.schedule('* * * * *', async () => {
-  try {
-    console.log('Ejecutando la tarea cron para actualizar calorías...');
 
-    const db = client.db('abmUsers');
-    const collection = db.collection('users');
-
-    const result = await collection.updateMany(
-      { 'calories.0': { $exists: true } },
-      { $set: { 'calories.$[elem].value': 0 } },
-      { arrayFilters: [{ 'elem.value': { $gt: 0 } }] }
-    );
-
-    console.log(`Número de documentos actualizados: ${result.modifiedCount}`);
-  } catch (error) {
-    console.error('Error en la tarea cron:', error);
-  }
-});
 
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
