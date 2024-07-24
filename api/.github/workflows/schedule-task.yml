@@ -1,0 +1,13 @@
+name: Scheduled Task
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Esto se ejecuta diariamente a medianoche (UTC)
+
+jobs:
+  scheduled-task:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send scheduled request to Vercel
+        run: |
+          curl -X POST https://tu-proyecto-backend.vercel.app/api/tareaProgramada
