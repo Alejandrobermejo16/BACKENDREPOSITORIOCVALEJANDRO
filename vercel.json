@@ -23,8 +23,8 @@
   ],
   "crons": [
     {
-      "path": "api/resetCalories.js",
-      "schedule": "* * * * *"
+      "path": "/api/resetCalories",  // Debe comenzar con /
+      "schedule": "* * * * *"        // Configura el horario que necesites
     }
   ],
   "routes": [
