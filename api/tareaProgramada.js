@@ -12,14 +12,14 @@ const connectDB = async () => {
     }
   } catch (error) {
     console.error('Error al conectar con MongoDB:', error);
-    process.exit(1); // Terminar el proceso si no se puede conectar a la DB
+    throw error;
   }
 };
 
 module.exports = async (req, res) => {
   if (req.method === 'GET') {
-    await connectDB();
     try {
+      await connectDB();
       const db = client.db('abmUsers');
       const collection = db.collection('users');
 

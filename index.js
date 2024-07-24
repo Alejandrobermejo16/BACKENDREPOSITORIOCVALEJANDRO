@@ -5,7 +5,7 @@ const cors = require('cors');
 const createUserRouter = require('./api/createUser');
 const logguinUser = require('./api/logguin');
 const calUser = require('./api/calUser');
-const resetCaloriesRouter = require('./api/tareaProgramada'); // Importa tu nuevo router
+const tareaProgramada = require('./api/tareaProgramada'); // Importa tu nuevo router
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 require('./api/tareaProgramada');
@@ -68,6 +68,7 @@ app.get('/', (req, res) => {
 app.use('/api/users', createUserRouter);
 app.use('/api/users', logguinUser);
 app.use('/api/users', calUser);
+app.use('/api/users', tareaProgramada);
 
 // Middleware para conectar a la base de datos
 app.use(async (req, res, next) => {
