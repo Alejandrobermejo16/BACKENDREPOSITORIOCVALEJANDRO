@@ -4,15 +4,16 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const cron = require('node-cron'); // Añadido para el cron job
 require('dotenv').config();
-const router = express.Router();
+
+const app = express();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
-router.use(cors());
-router.use(bodyParser.json());
+app.use(cors());
+app.use(bodyParser.json());
 
 // Middleware para conectar a la base de datos
-router.use(async (req, res, next) => {
+app.use(async (req, res, next) => {
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
@@ -27,7 +28,7 @@ router.use(async (req, res, next) => {
 });
 
 // Verificar si el usuario tiene registros de calorías
-router.get('/cal', async (req, res) => {
+app.get('/cal', async (req, res) => {
   const { userEmail } = req.query;
 
   if (!userEmail) {
@@ -38,10 +39,7 @@ router.get('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
-    // Buscar el usuario y verificar si tiene calorías registradas
-    const user = await collection.findOne(
-      { email: userEmail, 'calories.0': { $exists: true } }
-    );
+    const user = await collection.findOne({ email: userEmail, 'calories.0': { $exists: true } });
 
     if (user && user.calories && user.calories.length > 0) {
       return res.status(200).json({ calories: user.calories });
@@ -55,7 +53,7 @@ router.get('/cal', async (req, res) => {
 });
 
 // Actualizar calorías (PUT)
-router.put('/cal', async (req, res) => {
+app.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
@@ -66,7 +64,6 @@ router.put('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
-    // Actualizar el valor de las calorías del usuario
     const result = await collection.updateOne(
       { email: userEmail },
       { $set: { 'calories.$[elem].value': calories, 'calories.$[elem].date': new Date() } },
@@ -85,7 +82,7 @@ router.put('/cal', async (req, res) => {
 });
 
 // Crear un nuevo registro de calorías (POST)
-router.post('/cal', async (req, res) => {
+app.post('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
@@ -96,7 +93,6 @@ router.post('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
-    // Insertar el nuevo registro de calorías si no existe
     const result = await collection.updateOne(
       { email: userEmail },
       { $push: { calories: { value: calories, date: new Date() } } },
@@ -111,7 +107,7 @@ router.post('/cal', async (req, res) => {
 });
 
 // Cron job para restablecer las calorías a 0 a las 08:13 todos los días
-cron.schedule('29 8 * * *', async () => {
+cron.schedule('20 9 * * *', async () => {
   console.log('Cron job ejecutándose a las 08:13 para restablecer calorías a 0...');
   try {
     if (!client.topology || !client.topology.isConnected()) {
@@ -135,9 +131,16 @@ cron.schedule('29 8 * * *', async () => {
   }
 });
 
-router.use((err, req, res, next) => {
+// Manejo de errores
+app.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
 });
 
-module.exports = router;
+// Iniciar el servidor
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+module.exports = app;
