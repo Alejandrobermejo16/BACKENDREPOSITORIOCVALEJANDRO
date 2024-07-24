@@ -2,14 +2,29 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const cron = require('node-cron'); // Añadido para el cron job
+const cron = require('node-cron');
 require('dotenv').config();
 
 const app = express();
 const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-app.use(cors());
+// Configuración de CORS para permitir múltiples orígenes
+app.use(cors({
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'https://abmprojects-7kay.vercel.app',
+      'http://localhost:3000'
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
+
 app.use(bodyParser.json());
 
 // Middleware para conectar a la base de datos
@@ -67,9 +82,8 @@ app.put('/api/users/cal', async (req, res) => {
     const collection = db.collection('users');
 
     const result = await collection.updateOne(
-      { email: userEmail },
-      { $set: { 'calories.$[elem].value': calories, 'calories.$[elem].date': new Date() } },
-      { arrayFilters: [{ 'elem.value': { $exists: true } }] }
+      { email: userEmail, 'calories.0': { $exists: true } },
+      { $set: { 'calories.$.value': calories, 'calories.$.date': new Date() } }
     );
 
     if (result.modifiedCount > 0) {
@@ -122,7 +136,8 @@ cron.schedule('* * * * *', async () => {
 
     const result = await collection.updateMany(
       { 'calories.0.value': { $exists: true } },
-      { $set: { 'calories.0.value': 0 } }
+      { $set: { 'calories.$[elem].value': 0 } },
+      { arrayFilters: [{ 'elem.value': { $exists: true } }] }
     );
 
     console.log('Calorías del primer elemento de todos los usuarios restablecidas a 0');
