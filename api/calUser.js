@@ -11,7 +11,6 @@ const client = new MongoClient(uri);
 router.use(cors());
 router.use(bodyParser.json());
 
-// Middleware para conectar a la base de datos
 router.use(async (req, res, next) => {
   try {
     if (!client.topology || !client.topology.isConnected()) {
@@ -110,14 +109,10 @@ router.post('/cal', async (req, res) => {
   }
 });
 
-// Cron job para restablecer las calorías a 0 cada minuto
-cron.schedule('* * * * *', async () => {
-  console.log('Cron job ejecutándose cada minuto para restablecer calorías a 0...');
+// Cron job para restablecer las calorías a 0
+cron.schedule('32 09 * * *', async () => {
+  console.log('Cron job ejecutándose para restablecer calorías a 0...');
   try {
-    if (!client.topology || !client.topology.isConnected()) {
-      await client.connect();
-      console.log('Conexión establecida correctamente con MongoDB desde cron job');
-    }
     const db = client.db('abmUsers');
     const collection = db.collection('users');
 
