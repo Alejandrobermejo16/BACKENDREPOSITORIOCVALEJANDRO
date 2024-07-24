@@ -2,7 +2,6 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const cron = require('node-cron');
 require('dotenv').config();
 
 const router = express.Router();
@@ -106,33 +105,6 @@ router.post('/cal', async (req, res) => {
   } catch (error) {
     console.error('Error creating calories:', error);
     res.status(500).json({ message: 'Error creating calories' });
-  }
-});
-
-// Cron job para restablecer las calorías a 0
-cron.schedule('* * * * *', async () => {
-  console.log('Cron job ejecutándose para restablecer calorías a 0...');
-  try {
-    // Verificar la conexión antes de ejecutar el cron job
-    if (!client.topology || !client.topology.isConnected()) {
-      await client.connect();
-      console.log('Conexión establecida correctamente con MongoDB desde cron job');
-    }
-
-    const db = client.db('abmUsers');
-    const collection = db.collection('users');
-
-    // Actualizar el valor de las calorías a 0 en todos los registros
-    const result = await collection.updateMany(
-      {}, // Filtro vacío para seleccionar todos los documentos
-      { $set: { 'calories.$[elem].value': 0 } }, // Actualiza el valor a 0
-      { arrayFilters: [{ 'elem.value': { $exists: true } }] } // Filtro para los elementos en el array
-    );
-
-    console.log('Calorías de todos los usuarios restablecidas a 0');
-    console.log('Resultado de la actualización:', result);
-  } catch (error) {
-    console.error('Error al restablecer las calorías:', error);
   }
 });
 
