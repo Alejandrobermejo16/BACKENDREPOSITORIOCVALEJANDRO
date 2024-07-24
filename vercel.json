@@ -21,9 +21,15 @@
       "use": "@vercel/node"
     }
   ],
+  "crons": {
+    "path": "api/resetCalories.js",
+    "schedule": "* * * * *"
+  },
   "functions": {
-    "api/tareaProgramada.js": {
-      "schedule": "*/1 * * * *" // Ejecutar cada minuto
+    "api/resetCalories.js": {
+      "memory": 128,
+      "maxDuration": "10s",
+      "schedule": "* * * * *" 
     }
   },
   "routes": [

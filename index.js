@@ -5,10 +5,10 @@ const cors = require('cors');
 const createUserRouter = require('./api/createUser');
 const logguinUser = require('./api/logguin');
 const calUser = require('./api/calUser');
-const tareaProgramada = require('./api/tareaProgramada'); // Importa tu nuevo router
+const tareaProgramada = require('./api/resetCalories'); // Importa tu nuevo router
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
-require('./api/tareaProgramada');
+require('./api/resetCalories');
 
 
 const app = express();
