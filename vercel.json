@@ -34,12 +34,6 @@
       "src": "/api/users/cal",
       "dest": "/api/calUser.js"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron",
-      "schedule": "* * * * *"
-    }
   ]
 }
  
