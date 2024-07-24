@@ -21,6 +21,13 @@
       "use": "@vercel/node"
     }
   ],
+  "functions": {
+    "api/resetCalories.js": {
+      "memory": 128,
+      "maxDuration": "10s",
+      "schedule": "0 0 * * *"  // Ejecuta el cron job a la medianoche todos los días
+    }
+  },
   "routes": [
     {
       "src": "/(.*)",
