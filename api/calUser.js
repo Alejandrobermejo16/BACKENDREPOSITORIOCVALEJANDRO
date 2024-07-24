@@ -110,7 +110,7 @@ router.post('/cal', async (req, res) => {
 });
 
 // Cron job para restablecer las calorías a 0
-cron.schedule('36 9 * * *', async () => {
+cron.schedule('39 9 * * *', async () => {
   console.log('Cron job ejecutándose para restablecer calorías a 0...');
   try {
     const db = client.db('abmUsers');
