@@ -5,30 +5,16 @@ const cors = require('cors');
 const cron = require('node-cron');
 require('dotenv').config();
 
-const app = express();
+const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Configuración de CORS para permitir múltiples orígenes
-app.use(cors({
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://abmprojects-7kay.vercel.app',
-      'http://localhost:3000'
-    ];
-
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-}));
-
-app.use(bodyParser.json());
+// Configuración de CORS
+router.use(cors());
+router.use(bodyParser.json());
 
 // Middleware para conectar a la base de datos
-app.use(async (req, res, next) => {
+router.use(async (req, res, next) => {
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
@@ -43,7 +29,7 @@ app.use(async (req, res, next) => {
 });
 
 // Verificar si el usuario tiene registros de calorías
-app.get('/api/users/cal', async (req, res) => {
+router.get('/cal', async (req, res) => {
   const { userEmail } = req.query;
 
   if (!userEmail) {
@@ -70,7 +56,7 @@ app.get('/api/users/cal', async (req, res) => {
 });
 
 // Actualizar calorías (PUT)
-app.put('/api/users/cal', async (req, res) => {
+router.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
@@ -82,8 +68,9 @@ app.put('/api/users/cal', async (req, res) => {
     const collection = db.collection('users');
 
     const result = await collection.updateOne(
-      { email: userEmail, 'calories.0': { $exists: true } },
-      { $set: { 'calories.$.value': calories, 'calories.$.date': new Date() } }
+      { email: userEmail },
+      { $set: { 'calories.$[elem].value': calories, 'calories.$[elem].date': new Date() } },
+      { arrayFilters: [{ 'elem.value': { $exists: true } }] }
     );
 
     if (result.modifiedCount > 0) {
@@ -98,7 +85,7 @@ app.put('/api/users/cal', async (req, res) => {
 });
 
 // Crear un nuevo registro de calorías (POST)
-app.post('/api/users/cal', async (req, res) => {
+router.post('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
@@ -122,10 +109,11 @@ app.post('/api/users/cal', async (req, res) => {
   }
 });
 
-// Cron job para restablecer las calorías del primer elemento a 0 cada minuto
+// Cron job para restablecer las calorías a 0
 cron.schedule('* * * * *', async () => {
-  console.log('Cron job ejecutándose cada minuto para restablecer el valor de calorías a 0...');
+  console.log('Cron job ejecutándose para restablecer calorías a 0...');
   try {
+    // Verificar la conexión antes de ejecutar el cron job
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
       console.log('Conexión establecida correctamente con MongoDB desde cron job');
@@ -134,13 +122,14 @@ cron.schedule('* * * * *', async () => {
     const db = client.db('abmUsers');
     const collection = db.collection('users');
 
+    // Actualizar el valor de las calorías a 0 en todos los registros
     const result = await collection.updateMany(
-      { 'calories.0.value': { $exists: true } },
-      { $set: { 'calories.$[elem].value': 0 } },
-      { arrayFilters: [{ 'elem.value': { $exists: true } }] }
+      {}, // Filtro vacío para seleccionar todos los documentos
+      { $set: { 'calories.$[elem].value': 0 } }, // Actualiza el valor a 0
+      { arrayFilters: [{ 'elem.value': { $exists: true } }] } // Filtro para los elementos en el array
     );
 
-    console.log('Calorías del primer elemento de todos los usuarios restablecidas a 0');
+    console.log('Calorías de todos los usuarios restablecidas a 0');
     console.log('Resultado de la actualización:', result);
   } catch (error) {
     console.error('Error al restablecer las calorías:', error);
@@ -148,13 +137,9 @@ cron.schedule('* * * * *', async () => {
 });
 
 // Middleware de manejo de errores
-app.use((err, req, res, next) => {
+router.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
 });
 
-// Iniciar el servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
-});
+module.exports = router;
