@@ -5,9 +5,11 @@ const cors = require('cors');
 const createUserRouter = require('./api/createUser');
 const logguinUser = require('./api/logguin');
 const calUser = require('./api/calUser');
+const resetCaloriesRouter = require('./api/tareaProgramada'); // Importa tu nuevo router
 const { MongoClient } = require('mongodb');
-const cron = require('node-cron');
 require('dotenv').config();
+require('./api/tareaProgramada');
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -79,25 +81,6 @@ app.use(async (req, res, next) => {
   } catch (error) {
     console.error('Error al conectar con MongoDB:', error);
     res.status(500).json({ message: 'Error connecting to database' });
-  }
-});
-
-// Programar una tarea con node-cron para actualizar las calorías
-cron.schedule('* * * * *', async () => { // Ejecutar a la medianoche todos los días
-  console.log('Ejecutando tarea diaria para actualizar calorías...');
-  try {
-    const db = client.db('abmUsers');
-    const collection = db.collection('users');
-
-    // Actualizar el valor de las calorías a 0
-    const result = await collection.updateMany(
-      { 'calories.value': { $exists: true } },
-      { $set: { 'calories.$[].value': 0 } }
-    );
-
-    console.log('Número de documentos actualizados:', result.modifiedCount);
-  } catch (error) {
-    console.error('Error al actualizar las calorías:', error);
   }
 });
 
