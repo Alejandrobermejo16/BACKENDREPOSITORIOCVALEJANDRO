@@ -23,7 +23,7 @@
   ],
   "functions": {
     "api/tareaProgramada.js": {
-      "schedule": "*/1 * * * *"  // Ejecuta cada minuto
+      "schedule": "*/1 * * * *"
     }
   },
   "routes": [
