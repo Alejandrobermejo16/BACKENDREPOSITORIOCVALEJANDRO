@@ -15,10 +15,6 @@
     {
       "src": "api/calUser.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "api/cron/updateCalories.js",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -37,16 +33,7 @@
     {
       "src": "/api/users/cal",
       "dest": "/api/calUser.js"
-    },
-    {
-      "src": "/api/cron/update-calories",
-      "dest": "/api/cron/updateCalories.js"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/update-calories",
-      "schedule": "* * * * *"  
     }
   ]
 }
+ 
