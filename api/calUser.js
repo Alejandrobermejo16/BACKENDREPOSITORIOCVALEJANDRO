@@ -110,25 +110,26 @@ router.post('/cal', async (req, res) => {
   }
 });
 
-// Cron job para restablecer las calorías a 0 a las 00:00 todos los días
-cron.schedule('0 0 * * *', async () => {
-  console.log('Cron job ejecutándose a las 00:00 para restablecer calorías a 0...');
+// Cron job para restablecer las calorías del primer elemento a 0 cada minuto
+cron.schedule('* * * * *', async () => {
+  console.log('Cron job ejecutándose cada minuto para restablecer el valor de calorías a 0...');
   try {
+    // Conectar a la base de datos si no está conectado
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
       console.log('Conexión establecida correctamente con MongoDB desde cron job');
     }
+
     const db = client.db('abmUsers');
     const collection = db.collection('users');
 
-    // Actualizar el valor de las calorías a 0 en todos los registros
+    // Actualizar el valor de las calorías del primer elemento en el array a 0
     const result = await collection.updateMany(
-      {}, // Filtro vacío para seleccionar todos los documentos
-      { $set: { 'calories.$[elem].value': 0 } }, // Actualiza el valor a 0
-      { arrayFilters: [{ 'elem.value': { $exists: true } }] } // Filtro para los elementos en el array
+      { 'calories.0.value': { $exists: true } }, // Asegurarse de que el primer elemento existe
+      { $set: { 'calories.0.value': 0 } } // Actualizar solo el primer elemento del array
     );
 
-    console.log('Calorías de todos los usuarios restablecidas a 0');
+    console.log('Calorías del primer elemento de todos los usuarios restablecidas a 0');
     console.log('Resultado de la actualización:', result);
   } catch (error) {
     console.error('Error al restablecer las calorías:', error);
