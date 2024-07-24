@@ -17,21 +17,16 @@
       "use": "@vercel/node"
     },
     {
-      "src": "api/tareaProgramada.js",
+      "src": "api/resetCalories.js",
       "use": "@vercel/node"
     }
   ],
-  "crons": {
-    "path": "api/resetCalories.js",
-    "schedule": "* * * * *"
-  },
-  "functions": {
-    "api/resetCalories.js": {
-      "memory": 128,
-      "maxDuration": "10s",
-      "schedule": "* * * * *" 
+  "crons": [
+    {
+      "path": "api/resetCalories.js",
+      "schedule": "* * * * *"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/(.*)",
@@ -50,8 +45,8 @@
       "dest": "/api/calUser.js"
     },
     {
-      "src": "/api/tareaProgramada",
-      "dest": "/api/tareaProgramada.js"
+      "src": "/api/resetCalories",
+      "dest": "/api/resetCalories.js"
     }
   ]
 }
