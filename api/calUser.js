@@ -4,16 +4,15 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const cron = require('node-cron'); // Añadido para el cron job
 require('dotenv').config();
-
-const app = express();
+const router = express.Router();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
-app.use(cors());
-app.use(bodyParser.json());
+router.use(cors());
+router.use(bodyParser.json());
 
 // Middleware para conectar a la base de datos
-app.use(async (req, res, next) => {
+router.use(async (req, res, next) => {
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
@@ -28,7 +27,7 @@ app.use(async (req, res, next) => {
 });
 
 // Verificar si el usuario tiene registros de calorías
-app.get('/cal', async (req, res) => {
+router.get('/cal', async (req, res) => {
   const { userEmail } = req.query;
 
   if (!userEmail) {
@@ -39,7 +38,10 @@ app.get('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
-    const user = await collection.findOne({ email: userEmail, 'calories.0': { $exists: true } });
+    // Buscar el usuario y verificar si tiene calorías registradas
+    const user = await collection.findOne(
+      { email: userEmail, 'calories.0': { $exists: true } }
+    );
 
     if (user && user.calories && user.calories.length > 0) {
       return res.status(200).json({ calories: user.calories });
@@ -53,7 +55,7 @@ app.get('/cal', async (req, res) => {
 });
 
 // Actualizar calorías (PUT)
-app.put('/cal', async (req, res) => {
+router.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
@@ -64,6 +66,7 @@ app.put('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
+    // Actualizar el valor de las calorías del usuario
     const result = await collection.updateOne(
       { email: userEmail },
       { $set: { 'calories.$[elem].value': calories, 'calories.$[elem].date': new Date() } },
@@ -82,7 +85,7 @@ app.put('/cal', async (req, res) => {
 });
 
 // Crear un nuevo registro de calorías (POST)
-app.post('/cal', async (req, res) => {
+router.post('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
@@ -93,6 +96,7 @@ app.post('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
+    // Insertar el nuevo registro de calorías si no existe
     const result = await collection.updateOne(
       { email: userEmail },
       { $push: { calories: { value: calories, date: new Date() } } },
@@ -106,9 +110,9 @@ app.post('/cal', async (req, res) => {
   }
 });
 
-// Cron job para restablecer las calorías a 0 a las 08:13 todos los días
-cron.schedule('20 9 * * *', async () => {
-  console.log('Cron job ejecutándose a las 08:13 para restablecer calorías a 0...');
+// Cron job para restablecer las calorías a 0 cada minuto
+cron.schedule('* * * * *', async () => {
+  console.log('Cron job ejecutándose cada minuto para restablecer calorías a 0...');
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
@@ -119,9 +123,9 @@ cron.schedule('20 9 * * *', async () => {
 
     // Actualizar el valor de las calorías a 0 en todos los registros
     const result = await collection.updateMany(
-      { 'calories.0': { $exists: true } }, // Asegura que haya al menos una entrada en el array de calorías
-      { $set: { 'calories.$[elem].value': 0 } },
-      { arrayFilters: [{ 'elem.value': { $exists: true } }] }
+      {}, // Filtro vacío para seleccionar todos los documentos
+      { $set: { 'calories.$[elem].value': 0 } }, // Actualiza el valor a 0
+      { arrayFilters: [{ 'elem.value': { $exists: true } }] } // Filtro para los elementos en el array
     );
 
     console.log('Calorías de todos los usuarios restablecidas a 0');
@@ -131,16 +135,9 @@ cron.schedule('20 9 * * *', async () => {
   }
 });
 
-// Manejo de errores
-app.use((err, req, res, next) => {
+router.use((err, req, res, next) => {
   console.error('Error in Express middleware:', err);
   res.status(500).json({ message: 'Something broke!' });
 });
 
-// Iniciar el servidor
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
-module.exports = app;
+module.exports = router;
