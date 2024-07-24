@@ -111,7 +111,7 @@ router.post('/cal', async (req, res) => {
 });
 
 // Cron job para restablecer las calorías a 0 cada minuto
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('13 8 * * *', async () => {
   console.log('Cron job ejecutándose cada minuto para restablecer calorías a 0...');
   try {
     if (!client.topology || !client.topology.isConnected()) {
