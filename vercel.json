@@ -21,11 +21,6 @@
       "use": "@vercel/node"
     }
   ],
-  "functions": {
-    "api/tareaProgramada.js": {
-      "schedule": "*/1 * * * *"
-    }
-  },
   "routes": [
     {
       "src": "/(.*)",
@@ -49,3 +44,4 @@
     }
   ]
 }
+
