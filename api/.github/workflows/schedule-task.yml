@@ -10,4 +10,4 @@ jobs:
     steps:
       - name: Send scheduled request to Vercel
         run: |
-          curl -X POST https://tu-proyecto-backend.vercel.app/api/tareaProgramada
+          curl -X POST https://backendabmprojects.vercel.app//api/tareaProgramada
