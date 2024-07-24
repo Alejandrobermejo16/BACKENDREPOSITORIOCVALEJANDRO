@@ -1,4 +1,4 @@
-// api/cron/updateCalories.js
+// api/cron/update-calories.js
 const { MongoClient } = require('mongodb');
 
 module.exports = async (req, res) => {
@@ -16,11 +16,11 @@ module.exports = async (req, res) => {
 
   try {
     await client.connect();
-    const database = client.db('yourDatabaseName');
-    const collection = database.collection('yourCollectionName');
+    const db = client.db('abmUsers');
+    const collection = db.collection('users');
     
     // Actualizar los documentos
-    const result = await collection.updateMany({}, { $set: { calorias: 0 } });
+    const result = await collection.updateMany({}, { $set: { 'calories.$[].value': 0 } });
     res.status(200).json({ success: true, message: `${result.modifiedCount} documents updated` });
   } catch (error) {
     console.error(error);
@@ -29,4 +29,3 @@ module.exports = async (req, res) => {
     await client.close();
   }
 };
-
