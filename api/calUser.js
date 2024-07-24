@@ -110,9 +110,9 @@ router.post('/cal', async (req, res) => {
   }
 });
 
-// Cron job para restablecer las calorías a 0 cada minuto
-cron.schedule('13 8 * * *', async () => {
-  console.log('Cron job ejecutándose cada minuto para restablecer calorías a 0...');
+// Cron job para restablecer las calorías a 0 a las 08:13 todos los días
+cron.schedule('29 8 * * *', async () => {
+  console.log('Cron job ejecutándose a las 08:13 para restablecer calorías a 0...');
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
@@ -123,9 +123,9 @@ cron.schedule('13 8 * * *', async () => {
 
     // Actualizar el valor de las calorías a 0 en todos los registros
     const result = await collection.updateMany(
-      {}, // Filtro vacío para seleccionar todos los documentos
-      { $set: { 'calories.$[elem].value': 0 } }, // Actualiza el valor a 0
-      { arrayFilters: [{ 'elem.value': { $exists: true } }] } // Filtro para los elementos en el array
+      { 'calories.0': { $exists: true } }, // Asegura que haya al menos una entrada en el array de calorías
+      { $set: { 'calories.$[elem].value': 0 } },
+      { arrayFilters: [{ 'elem.value': { $exists: true } }] }
     );
 
     console.log('Calorías de todos los usuarios restablecidas a 0');
