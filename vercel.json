@@ -21,12 +21,6 @@
       "use": "@vercel/node"
     }
   ],
-  "crons": [
-    {
-      "path": "/api/resetCalories",
-      "schedule": "* * * * *"
-    }
-  ],
   "routes": [
     {
       "src": "/(.*)",
