@@ -5,11 +5,9 @@ const cors = require('cors');
 const createUserRouter = require('./api/createUser');
 const logguinUser = require('./api/logguin');
 const calUser = require('./api/calUser');
-const tareaProgramada = require('./api/resetCalories'); // Importa tu nuevo router
+const resetCalories = require('./api/resetCalories'); // Importa tu función
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
-require('./api/resetCalories');
-
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -68,7 +66,16 @@ app.get('/', (req, res) => {
 app.use('/api/users', createUserRouter);
 app.use('/api/users', logguinUser);
 app.use('/api/users', calUser);
-app.use('/api/users', tareaProgramada);
+
+// Ruta programada para restablecer las calorías
+app.post('/api/resetCalories', async (req, res) => {
+  try {
+    const result = await resetCalories();
+    res.status(200).json({ message: `Calorías restablecidas para ${result} usuarios.` });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al restablecer calorías', error });
+  }
+});
 
 // Middleware para conectar a la base de datos
 app.use(async (req, res, next) => {

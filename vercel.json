@@ -21,13 +21,6 @@
       "use": "@vercel/node"
     }
   ],
-  "functions": {
-    "api/resetCalories.js": {
-      "memory": 128,
-      "maxDuration": "10s",
-      "schedule": "* * * * *"
-    }
-  },
   "routes": [
     {
       "src": "/(.*)",

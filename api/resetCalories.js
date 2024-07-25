@@ -1,4 +1,3 @@
-// resetCalories.js
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 

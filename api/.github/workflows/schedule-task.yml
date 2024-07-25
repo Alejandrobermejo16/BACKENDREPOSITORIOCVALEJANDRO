@@ -2,7 +2,7 @@ name: Scheduled Task
 
 on:
   schedule:
-    - cron: '* * * * *' # Esto se ejecuta diariamente a medianoche (UTC)
+    - cron: '* * * * *' # Esto se ejecuta cada minuto
 
 jobs:
   scheduled-task:
@@ -10,4 +10,4 @@ jobs:
     steps:
       - name: Send scheduled request to Vercel
         run: |
-          curl -X POST https://backendabmprojects.vercel.app//api/tareaProgramada
+          curl -X POST https://backendabmprojects.vercel.app/api/resetCalories
