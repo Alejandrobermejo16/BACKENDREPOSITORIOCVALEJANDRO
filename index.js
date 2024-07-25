@@ -5,7 +5,7 @@ const cors = require('cors');
 const createUserRouter = require('./api/createUser');
 const logguinUser = require('./api/logguin');
 const calUser = require('./api/calUser');
-const resetCalories = require('./api/resetCalories'); // Importa tu función
+const resetCalories = require('./api/resetCalories'); // Importa tu función de reset
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
