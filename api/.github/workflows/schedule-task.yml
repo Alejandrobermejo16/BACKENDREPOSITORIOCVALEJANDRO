@@ -9,4 +9,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send scheduled request to Vercel
-        run: curl -X POST https://backendabmprojects.vercel.app/api/resetCalories
+        run: curl -X POST https://backendabmprojects.vercel.app/resetCalories
