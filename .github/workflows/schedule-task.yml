@@ -1,0 +1,12 @@
+name: Scheduled Task
+
+on:
+  schedule:
+    - cron: '* * * * *' # Esto se ejecuta cada minuto
+
+jobs:
+  scheduled-task:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send scheduled request to Vercel
+        run: curl -X POST https://backendabmprojects.vercel.app/api/resetCalories
