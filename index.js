@@ -10,6 +10,8 @@ const { MongoClient } = require('mongodb');
 require('dotenv').config();
 const cron = require('node-cron');
 const axios = require('axios');
+const setupCronJobs = require('./scripts/resetCalories');
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -100,12 +102,15 @@ app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
-cron.schedule('1 0 * * *', async () => {
-  try {
-    console.log('Ejecutando cron job para restablecer las calorías a las 13:00...');
-    await axios.post('http://localhost:3001/api/resetCalories');
-    console.log('Restablecimiento de calorías completado.');
-  } catch (error) {
-    console.error('Error al ejecutar cron job:', error);
-  }
-});
+// cron.schedule('1 0 * * *', async () => {
+//   try {
+//     console.log('Ejecutando cron job para restablecer las calorías a las 13:00...');
+//     await axios.post('http://localhost:3001/api/resetCalories');
+//     console.log('Restablecimiento de calorías completado.');
+//   } catch (error) {
+//     console.error('Error al ejecutar cron job:', error);
+//   }
+// });
+
+// Configurar cron jobs
+setupCronJobs();
