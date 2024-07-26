@@ -1,4 +1,4 @@
-name: Run cron job
+name:   Cambio nombre para prueba
 
 on:
   schedule:
