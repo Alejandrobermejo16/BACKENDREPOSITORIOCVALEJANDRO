@@ -100,7 +100,7 @@ app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
-// Configurar cron job para ejecutar cada minuto
+// Configurar cron job para ejecutar a las 00:01
 cron.schedule('1 0 * * *', async () => {
   try {
     console.log('Ejecutando cron job para restablecer las calorías...');
