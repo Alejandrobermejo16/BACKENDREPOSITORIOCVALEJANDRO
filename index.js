@@ -100,10 +100,9 @@ app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
-// Configurar cron job para ejecutar a las 00:01
-cron.schedule('1 0 * * *', async () => {
+cron.schedule('0 13 * * *', async () => {
   try {
-    console.log('Ejecutando cron job para restablecer las calorías...');
+    console.log('Ejecutando cron job para restablecer las calorías a las 13:00...');
     await axios.post('http://localhost:3001/api/resetCalories');
     console.log('Restablecimiento de calorías completado.');
   } catch (error) {
