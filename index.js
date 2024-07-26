@@ -100,7 +100,7 @@ app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('1 0 * * *', async () => {
   try {
     console.log('Ejecutando cron job para restablecer las calorías a las 13:00...');
     await axios.post('http://localhost:3001/api/resetCalories');
