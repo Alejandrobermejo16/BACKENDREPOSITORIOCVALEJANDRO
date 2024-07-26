@@ -1,16 +1,126 @@
-name:   Reseteo de calorias
+name: Reseteo de calorías
 
 on:
   schedule:
-    - cron: '1 0 * * *'  # Ejecuta todos los días a las 00:01
+    # Ejecuta todos los días a las 00:01
+    - cron: '1 0 * * *'
+
+    # Ejecuta cada 5 minutos
+    # - cron: '*/5 * * * *'
+
+    # Ejecuta cada 10 minutos
+    # - cron: '*/10 * * * *'
+
+    # Ejecuta todos los días a las 12:00 PM
+    # - cron: '0 12 * * *'
+
+    # Ejecuta cada hora
+    # - cron: '0 * * * *'
+
+    # Ejecuta cada 15 minutos
+    # - cron: '*/15 * * * *'
+
+    # Ejecuta cada domingo a las 01:00 AM
+    # - cron: '0 1 * * 0'
+
+    # Ejecuta el primer día de cada mes a las 02:00 AM
+    # - cron: '0 2 1 * *'
+
   workflow_dispatch: # Permite ejecutar manualmente desde la interfaz de GitHub
 
 jobs:
   run-cron-job:
     runs-on: ubuntu-latest
+
+    # Condicional para ejecutar el trabajo solo si el repositorio es de producción
+    # Puedes ajustar el valor según tus necesidades
+    # if: github.repository == 'mi-organizacion/mi-repo-produccion'
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Run curl command
-        run: curl -X POST https://backendabmprojects.vercel.app/api/resetCalories
+
+          #EJECUTAR JOBS CONCRETOS EN UN PERIODO DE TIEMPO CONCRETO
+
+  # Ejemplo de tarea que se ejecuta cada 5 minutos
+      # - name: Task every 5 minutes
+      #   if: github.event.schedule == '*/5 * * * *'
+      #   run: |
+      #     echo "Esta tarea se ejecuta cada 5 minutos."
+      #     # Aquí puedes agregar el comando o script que desees ejecutar
+
+      # Ejemplo de tarea que se ejecuta cada 10 minutos
+      # - name: Task every 10 minutes
+      #   if: github.event.schedule == '*/10 * * * *'
+      #   run: |
+      #     echo "Esta tarea se ejecuta cada 10 minutos."
+      #     # Aquí puedes agregar el comando o script que desees ejecutar
+
+      # Ejemplo de tarea que se ejecuta todos los días a las 12:00 PM
+      # - name: Task every day at 12:00 PM
+      #   if: github.event.schedule == '0 12 * * *'
+      #   run: |
+      #     echo "Esta tarea se ejecuta todos los días a las 12:00 PM."
+      #     # Aquí puedes agregar el comando o script que desees ejecutar
+
+      # Ejemplo de tarea que se ejecuta cada hora
+      # - name: Task every hour
+      #   if: github.event.schedule == '0 * * * *'
+      #   run: |
+      #     echo "Esta tarea se ejecuta cada hora."
+      #     # Aquí puedes agregar el comando o script que desees ejecutar
+
+      # Ejemplo de tarea que se ejecuta cada 15 minutos
+      # - name: Task every 15 minutes
+      #   if: github.event.schedule == '*/15 * * * *'
+      #   run: |
+      #     echo "Esta tarea se ejecuta cada 15 minutos."
+      #     # Aquí puedes agregar el comando o script que desees ejecutar
+
+      # Ejemplo de tarea que se ejecuta cada domingo a las 01:00 AM
+      # - name: Task every Sunday at 01:00 AM
+      #   if: github.event.schedule == '0 1 * * 0'
+      #   run: |
+      #     echo "Esta tarea se ejecuta cada domingo a las 01:00 AM."
+      #     # Aquí puedes agregar el comando o script que desees ejecutar
+
+      # Ejemplo de tarea que se ejecuta el primer día de cada mes a las 02:00 AM
+      # - name: Task on the 1st of every month at 02:00 AM
+      #   if: github.event.schedule == '0 2 1 * *'
+      #   run: |
+      #     echo "Esta tarea se ejecuta el primer día de cada mes a las 02:00 AM."
+      #     # Aquí puedes agregar el comando o script que desees ejecutar
+
+      # Paso que se ejecuta solo si el repositorio es de producción
+      # Puedes ajustar el valor según tus necesidades
+      # - name: Run curl command for production
+      #   if: github.repository == 'mi-organizacion/mi-repo-produccion'
+      #   run: curl -X POST https://backendabmprojects.vercel.app/api/resetCalories
+
+      # Paso que se ejecuta solo si la rama es main
+      # Puedes ajustar el valor según tus necesidades
+      # - name: Run another curl command
+      #   if: github.ref == 'refs/heads/main'
+      #   run: curl -X POST https://backendabmprojects.vercel.app/api/anotherEndpoint
+
+      # Paso que se ejecuta solo si la variable de entorno ENV está establecida en 'production'
+      # Puedes definir esta variable de entorno en los settings del repositorio o en los secretos
+      # - name: Run custom script
+      #   if: env.ENV == 'production'
+      #   run: |
+      #     chmod +x ./scripts/custom-script.sh
+      #     ./scripts/custom-script.sh
+
+      # Paso que se ejecuta solo si el trabajo anterior fue exitoso
+      # - name: Success message
+      #   if: success()
+      #   run: echo "El trabajo se ejecutó correctamente."
+
+      # Paso que se ejecuta solo si el trabajo anterior falló
+      # - name: Failure message
+      #   if: failure()
+      #   run: echo "El trabajo falló."
+
+
+                                        
