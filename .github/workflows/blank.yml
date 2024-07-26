@@ -22,5 +22,5 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-     name: "Mostrar mensaje"
-     run: echo "hola mundo"
+      - name: "Mostrar mensaje"
+        run: echo "hola mundo"
