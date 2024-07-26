@@ -103,13 +103,13 @@ app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
-// // Configurar cron job para ejecutar cada minuto
-// cron.schedule('* * * * *', async () => {
-//   try {
-//     console.log('Ejecutando cron job para restablecer las calorías...');
-//     await axios.post('http://localhost:3001/api/resetCalories');
-//     console.log('Restablecimiento de calorías completado.');
-//   } catch (error) {
-//     console.error('Error al ejecutar cron job:', error);
-//   }
-// });
+// Configurar cron job para ejecutar cada minuto
+cron.schedule('* * * * *', async () => {
+  try {
+    console.log('Ejecutando cron job para restablecer las calorías...');
+    await axios.post('http://localhost:3001/api/resetCalories');
+    console.log('Restablecimiento de calorías completado.');
+  } catch (error) {
+    console.error('Error al ejecutar cron job:', error);
+  }
+});
