@@ -1,26 +1,14 @@
-name: Update User Calories
+name: Run cron job
 
 on:
   schedule:
-    - cron: '* * * * *' # Ejecutar cada minuto
+    - cron: '* * * * *'  # Ejecutar cada hora en el minuto 0
+  workflow_dispatch:  # Permite ejecutar el workflow manualmente desde la interfaz de GitHub
 
 jobs:
-  update-calories:
+  run-cron-job:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22' # La versión de Node.js que tienes instalada
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run update calories script
-        run: node scripts/updateCalories.js
-        env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }} # Configura el secreto de MongoDB URI
+      - name: Make API Request
+        run: |
+          curl -X POST https://backendabmprojects.vercel.app/api/resetCalories

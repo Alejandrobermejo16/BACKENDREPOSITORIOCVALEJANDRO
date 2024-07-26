@@ -5,9 +5,11 @@ const cors = require('cors');
 const createUserRouter = require('./api/createUser');
 const logguinUser = require('./api/logguin');
 const calUser = require('./api/calUser');
-const resetCalories = require('./api/resetCalories'); // Importa tu función de reset
+const resetCalories = require('./api/resetCalories'); // Asegúrate de que este archivo exporta una función
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
+const cron = require('node-cron');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,6 +17,21 @@ const PORT = process.env.PORT || 3001;
 // Configuración de la base de datos
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Middleware para conectar a la base de datos
+app.use(async (req, res, next) => {
+  try {
+    if (!client.topology || !client.topology.isConnected()) {
+      await client.connect();
+      console.log('Conexión establecida correctamente con MongoDB');
+    }
+    req.dbClient = client;
+    next();
+  } catch (error) {
+    console.error('Error al conectar con MongoDB:', error);
+    res.status(500).json({ message: 'Error connecting to database' });
+  }
+});
 
 // Middleware para permitir solicitudes CORS desde un origen específico
 app.use(cors({
@@ -67,32 +84,29 @@ app.use('/api/users', createUserRouter);
 app.use('/api/users', logguinUser);
 app.use('/api/users', calUser);
 
-// Ruta programada para restablecer las calorías
+// Ruta para restablecer las calorías
 app.post('/api/resetCalories', async (req, res) => {
   try {
-    const result = await resetCalories();
+    // Llama a la función de restablecimiento de calorías
+    const result = await resetCalories(); // Asegúrate de que esta función devuelve un número
     res.status(200).json({ message: `Calorías restablecidas para ${result} usuarios.` });
   } catch (error) {
-    res.status(500).json({ message: 'Error al restablecer calorías', error });
-  }
-});
-
-// Middleware para conectar a la base de datos
-app.use(async (req, res, next) => {
-  try {
-    if (!client.topology || !client.topology.isConnected()) {
-      await client.connect();
-      console.log('Conexión establecida correctamente con MongoDB');
-    }
-    req.dbClient = client;
-    next();
-  } catch (error) {
-    console.error('Error al conectar con MongoDB:', error);
-    res.status(500).json({ message: 'Error connecting to database' });
+    res.status(500).json({ message: 'Error al restablecer calorías', error: error.message });
   }
 });
 
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
+
+// Configurar cron job para ejecutar cada minuto
+cron.schedule('* * * * *', async () => {
+  try {
+    console.log('Ejecutando cron job para restablecer las calorías...');
+    await axios.post('http://localhost:3001/api/resetCalories');
+    console.log('Restablecimiento de calorías completado.');
+  } catch (error) {
+    console.error('Error al ejecutar cron job:', error);
+  }
 });
