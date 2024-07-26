@@ -5,6 +5,7 @@ const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const resetCalories = async () => {
+  console.log('Iniciando la función de restablecimiento de calorías...'); // Añadido para depuración
   try {
     await client.connect();
     const db = client.db('abmUsers');
@@ -12,8 +13,10 @@ const resetCalories = async () => {
 
     // Consulta para encontrar usuarios con registros de calorías
     const usersWithCalories = await collection.find({ 'calories.0': { $exists: true } }).toArray();
+    console.log(`Usuarios encontrados con registros de calorías: ${usersWithCalories.length}`); // Añadido para depuración
 
     if (usersWithCalories.length === 0) {
+      console.log('No hay usuarios con registros de calorías.');
       return 0; // Retorna 0 si no hay usuarios con calorías
     }
 
@@ -22,6 +25,7 @@ const resetCalories = async () => {
       { 'calories.0': { $exists: true } },
       { $set: { 'calories.$[].value': 0 } }
     );
+    console.log(`Calorías actualizadas para ${result.modifiedCount} usuarios.`); // Añadido para depuración
 
     return result.modifiedCount;
   } catch (error) {
