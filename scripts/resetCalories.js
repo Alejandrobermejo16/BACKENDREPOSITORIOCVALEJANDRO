@@ -11,7 +11,7 @@ const setupCronJobs = () => {
       await axios.post('https://backendabmprojects.vercel.app/api/resetCalories');
       console.log('Restablecimiento de calorías completado.');
     } catch (error) {
-      console.error('Error al ejecutar cron job:', error);
+      console.error('Error al ejecutar cron job:', error); 
     }
   });
 };
