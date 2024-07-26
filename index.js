@@ -5,7 +5,7 @@ const cors = require('cors');
 const createUserRouter = require('./api/createUser');
 const logguinUser = require('./api/logguin');
 const calUser = require('./api/calUser');
-const resetCalories = require('./api/resetCalories'); // Asegúrate de que este archivo exporta una función
+const resetCalories = require('./api/resetCalories');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 const cron = require('node-cron');
@@ -35,7 +35,10 @@ app.use(async (req, res, next) => {
 
 // Middleware para permitir solicitudes CORS desde un origen específico
 app.use(cors({
-  origin: 'https://abmprojects-7kay.vercel.app'
+  origin: 'https://abmprojects-7kay.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true // Si necesitas enviar cookies con la solicitud
 }));
 
 // Middleware para analizar el cuerpo de la solicitud JSON
@@ -110,4 +113,3 @@ cron.schedule('* * * * *', async () => {
     console.error('Error al ejecutar cron job:', error);
   }
 });
-
