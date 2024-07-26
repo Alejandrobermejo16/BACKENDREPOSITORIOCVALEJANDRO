@@ -1,8 +1,8 @@
-name: Nuevo Job
+name:   Reseteo de calorias
 
 on:
   schedule:
-    - cron: '* * * * *'  # Ejecuta cada minuto
+    - cron: '1 0 * * *'  # Ejecuta todos los días a las 00:01
   workflow_dispatch: # Permite ejecutar manualmente desde la interfaz de GitHub
 
 jobs:

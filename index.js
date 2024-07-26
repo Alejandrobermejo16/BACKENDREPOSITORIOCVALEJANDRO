@@ -101,7 +101,7 @@ app.listen(PORT, () => {
 });
 
 // Configurar cron job para ejecutar cada minuto
-cron.schedule('* * * * *', async () => {
+cron.schedule('1 0 * * *', async () => {
   try {
     console.log('Ejecutando cron job para restablecer las calorías...');
     await axios.post('http://localhost:3001/api/resetCalories');
