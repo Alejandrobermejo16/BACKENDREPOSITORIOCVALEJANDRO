@@ -8,8 +8,7 @@ const calUser = require('./api/calUser');
 const resetCalories = require('./api/resetCalories');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
-const cron = require('node-cron');
-const axios = require('axios');
+const setupCronJobs = require('./scripts/resetCalories'); // Importa la configuración del cron job
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -101,15 +100,5 @@ app.post('/api/resetCalories', async (req, res) => {
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
-
-// Configurar cron job para ejecutar cada minuto
-cron.schedule('* * * * *', async () => {
-  try {
-    console.log('Ejecutando cron job para restablecer las calorías...');
-    await axios.post('https://backendabmprojects.vercel.app/api/resetCalories');
-    console.log('Restablecimiento de calorías completado.');
-  } catch (error) {
-    console.error('Error al ejecutar cron job:', error);
-  }
+  setupCronJobs(); // Configura el cron job cuando el servidor se inicie
 });
