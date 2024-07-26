@@ -1,14 +1,17 @@
-name:   Cambio nombre para prueba
+name: prueba cambio version node
 
 on:
   schedule:
-    - cron: '* * * * *'  # Ejecutar cada hora en el minuto 0
+    - cron: '0 * * * *'  # Ejecutar cada hora en el minuto 0
   workflow_dispatch:  # Permite ejecutar el workflow manualmente desde la interfaz de GitHub
 
 jobs:
   run-cron-job:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3  # Actualiza a la última versión disponible
+
       - name: Make API Request
         run: |
-          curl -X POST https://backendabmprojects.vercel.app/api/resetCalories
+          curl -X POST http://tu-dominio.vercel.app/api/resetCalories
