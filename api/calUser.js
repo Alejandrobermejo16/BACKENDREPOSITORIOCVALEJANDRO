@@ -58,6 +58,7 @@ router.get('/cal', async (req, res) => {
 // Actualizar calorías (PUT)
 router.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
+  console.log(req.body);
 
   if (!userEmail || calories == null) {
     return res.status(400).json({ message: 'Email and calories are required' });
