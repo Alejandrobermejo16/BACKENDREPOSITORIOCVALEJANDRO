@@ -58,6 +58,9 @@ router.get('/cal', async (req, res) => {
 router.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
+  // Registra el contenido de req.body para inspección
+  console.log('Datos recibidos:', req.body);
+
   if (!userEmail || calories == null) {
     return res.status(400).json({ message: 'Email and calories are required' });
   }
@@ -82,6 +85,7 @@ router.put('/cal', async (req, res) => {
     res.status(500).json({ message: 'Error updating calories' });
   }
 });
+
 
 // Crear un nuevo registro de calorías (POST)
 router.post('/cal', async (req, res) => {
