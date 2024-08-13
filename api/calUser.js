@@ -7,6 +7,7 @@ const cron = require('node-cron');
 
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
+
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Configuración de CORS
@@ -31,11 +32,9 @@ router.use(async (req, res, next) => {
 // Verificar si el usuario tiene registros de calorías
 router.get('/cal', async (req, res) => {
   const { userEmail } = req.query;
-
   if (!userEmail) {
     return res.status(400).json({ message: 'Email is required' });
   }
-
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
@@ -58,7 +57,6 @@ router.get('/cal', async (req, res) => {
 // Actualizar calorías (PUT)
 router.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
-  console.log(req.body);
 
   if (!userEmail || calories == null) {
     return res.status(400).json({ message: 'Email and calories are required' });
@@ -88,7 +86,7 @@ router.put('/cal', async (req, res) => {
 // Crear un nuevo registro de calorías (POST)
 router.post('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
-  console.log(req.body);
+
   if (!userEmail || calories == null) {
     return res.status(400).json({ message: 'Email and calories are required' });
   }
@@ -109,8 +107,6 @@ router.post('/cal', async (req, res) => {
     res.status(500).json({ message: 'Error creating calories' });
   }
 });
-
-
 
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
