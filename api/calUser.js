@@ -56,24 +56,33 @@ router.get('/cal', async (req, res) => {
 
 // Actualizar calorías (PUT)
 router.put('/cal', async (req, res) => {
-  const { userEmail, calories } = req.body;
+  const { userEmail, calories, CalMonth } = req.body;
 
-
-  if (!userEmail || calories == null) {
-    return res.status(400).json({ message: 'Email and calories are required' });
+  if (!userEmail || calories == null || !CalMonth) {
+    return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
 
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
+    // Actualizar el documento
     const result = await collection.updateOne(
       { email: userEmail },
-      { $set: { 'calories.$[elem].value': calories, 'calories.$[elem].date': new Date() } },
-      { arrayFilters: [{ 'elem.value': { $exists: true } }] }
+      { 
+        $set: { 
+          'calories.$[elem].value': calories.value, 
+          'calories.$[elem].date': new Date(calories.date),
+          ...CalMonth
+        }
+      },
+      { 
+        arrayFilters: [{ 'elem.value': { $exists: true } }],
+        upsert: true 
+      }
     );
 
-    if (result.modifiedCount > 0) {
+    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
     }
 
@@ -85,21 +94,26 @@ router.put('/cal', async (req, res) => {
 });
 
 
+
 // Crear un nuevo registro de calorías (POST)
 router.post('/cal', async (req, res) => {
-  const { userEmail, calories } = req.body;
+  const { userEmail, calories, CalMonth } = req.body;
 
-  if (!userEmail || calories == null) {
-    return res.status(400).json({ message: 'Email and calories are required' });
+  if (!userEmail || calories == null || !CalMonth) {
+    return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
 
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
+    // Actualizar o insertar el documento
     const result = await collection.updateOne(
       { email: userEmail },
-      { $push: { calories: { value: calories, date: new Date() } } },
+      { 
+        $push: { calories: { value: calories.value, date: new Date(calories.date) } },
+        $set: CalMonth
+      },
       { upsert: true }
     );
 
@@ -109,6 +123,7 @@ router.post('/cal', async (req, res) => {
     res.status(500).json({ message: 'Error creating calories' });
   }
 });
+
 
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
