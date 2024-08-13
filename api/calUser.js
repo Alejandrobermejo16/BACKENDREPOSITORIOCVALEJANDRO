@@ -56,7 +56,7 @@ router.get('/cal', async (req, res) => {
 
 // Actualizar calorías (PUT)
 router.put('/cal', async (req, res) => {
-  const { userEmail, calories, CalMonth } = req.body;
+  const { userEmail, calories } = req.body;
 
 
   if (!userEmail || calories == null) {
@@ -69,7 +69,6 @@ router.put('/cal', async (req, res) => {
 
     const result = await collection.updateOne(
       { email: userEmail },
-      {CalMonth: CalMonth},
       { $set: { 'calories.$[elem].value': calories, 'calories.$[elem].date': new Date() } },
       { arrayFilters: [{ 'elem.value': { $exists: true } }] }
     );
@@ -88,7 +87,7 @@ router.put('/cal', async (req, res) => {
 
 // Crear un nuevo registro de calorías (POST)
 router.post('/cal', async (req, res) => {
-  const { userEmail, calories, CalMonth } = req.body;
+  const { userEmail, calories } = req.body;
 
   if (!userEmail || calories == null) {
     return res.status(400).json({ message: 'Email and calories are required' });
@@ -100,7 +99,6 @@ router.post('/cal', async (req, res) => {
 
     const result = await collection.updateOne(
       { email: userEmail },
-      {CalMonth: CalMonth},
       { $push: { calories: { value: calories, date: new Date() } } },
       { upsert: true }
     );
