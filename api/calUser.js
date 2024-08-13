@@ -58,8 +58,6 @@ router.get('/cal', async (req, res) => {
 router.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
 
-  // Registra el contenido de req.body para inspección
-  console.log('Datos recibidos:', req.body);
 
   if (!userEmail || calories == null) {
     return res.status(400).json({ message: 'Email and calories are required' });
@@ -76,6 +74,8 @@ router.put('/cal', async (req, res) => {
     );
 
     if (result.modifiedCount > 0) {
+      console.log('Datos que llegan al back:', req.body);
+
       return res.status(200).json({ message: 'Calories updated successfully' });
     }
 
