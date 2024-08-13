@@ -22,7 +22,7 @@ app.use(async (req, res, next) => {
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
-      console.log('Conexión establecida correctamente con MongoDB');
+      console.log('Conexión establecida index');
     }
     req.dbClient = client;
     next();
