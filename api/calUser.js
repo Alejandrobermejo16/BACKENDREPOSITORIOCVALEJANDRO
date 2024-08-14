@@ -106,7 +106,7 @@ router.post('/cal', async (req, res) => {
       },
       { upsert: true }
     );
-    res.status(201).json({ message: 'Calories created successfully', data: result });
+    res.status(201).json({ message: 'Calories created successfully', data: result, CalMonth: CalMonth });
   } catch (error) {
     console.error('Error creating calories:', error);
     res.status(500).json({ message: 'Error creating calories' });
