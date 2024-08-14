@@ -66,19 +66,24 @@ router.put('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
-    // Actualizar el documento
+    // Extraer el mes y el día del payload
+    const monthName = Object.keys(CalMonth)[0];
+    const dayNumber = Object.keys(CalMonth[monthName].days)[0];
+    const dayCalories = CalMonth[monthName].days[dayNumber].calories;
+
+    // Actualizar solo el día específico en el mes correspondiente
     const result = await collection.updateOne(
       { email: userEmail },
-      { 
-        $set: { 
+      {
+        $set: {
+          [`CalMonth.${monthName}.days.${dayNumber}.calories`]: dayCalories,
           'calories.$[elem].value': calories.value, 
           'calories.$[elem].date': new Date(calories.date),
-          'CalMonth': CalMonth,
         }
       },
-      { 
+      {
         arrayFilters: [{ 'elem.value': { $exists: true } }],
-        upsert: true 
+        upsert: true
       }
     );
 
@@ -92,8 +97,6 @@ router.put('/cal', async (req, res) => {
     res.status(500).json({ message: 'Error updating calories' });
   }
 });
-
-
 
 // Crear un nuevo registro de calorías (POST)
 router.post('/cal', async (req, res) => {
@@ -112,7 +115,7 @@ router.post('/cal', async (req, res) => {
       { email: userEmail },
       { 
         $push: { calories: { value: calories.value, date: new Date(calories.date) } },
-        $set: { 'CalMonth': CalMonth }
+        $set: { [`CalMonth.${Object.keys(CalMonth)[0]}`]: CalMonth[Object.keys(CalMonth)[0]] }
       },
       { upsert: true }
     );
@@ -123,7 +126,6 @@ router.post('/cal', async (req, res) => {
     res.status(500).json({ message: 'Error creating calories' });
   }
 });
-
 
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
