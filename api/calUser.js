@@ -127,13 +127,10 @@ router.put('/cal', async (req, res) => {
       }
     );
 
-    if (result.modifiedCount > 0) {
-      return res.status(200).json({ message: 'Calories updated successfully' });
-    }
-    res.status(404).json({ message: 'User not found or no calories to update' });
+    res.status(201).json({ message: 'Calories created successfully', data: result });
   } catch (error) {
-    console.error('Error updating calories:', error);
-    res.status(500).json({ message: 'Error updating calories' });
+    console.error('Error creating calories:', error);
+    res.status(500).json({ message: 'Error creating calories' });
   }
 });
 
