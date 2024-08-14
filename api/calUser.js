@@ -51,29 +51,60 @@ router.put('/cal', async (req, res) => {
   if (!userEmail || calories == null || !CalMonth) {
     return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
+
+  const todayDate = new Date(calories.date);
+  const day = todayDate.getDate(); // Día del mes
+  const month = todayDate.getMonth() + 1; // Mes en formato 1-12
+  const year = todayDate.getFullYear(); // Año actual
+  const monthKey = `${year}-${month.toString().padStart(2, '0')}`; // Clave del mes en formato YYYY-MM
+
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-    // Actualizar el documento
-    const result = await collection.updateOne(
-      { email: userEmail },
-      { 
-        $set: { 
-          'calories.$[elem].value': calories.value, 
-          'calories.$[elem].date': new Date(calories.date),
-          ...CalMonth,
-          'CalMonth': CalMonth,
-        }
-      },
-      { 
-        arrayFilters: [{ 'elem.value': { $exists: true } }],
-        upsert: true 
-      }
-    );
-    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
-      return res.status(200).json({ message: 'Calories updated successfully' });
+    
+    // Encontrar el usuario
+    const user = await collection.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
-    res.status(404).json({ message: 'User not found or no calories to update' });
+
+    // Obtener el objeto CalMonth del usuario
+    const calMonthData = user.CalMonth || {};
+
+    // Verificar si el mes existe en CalMonth
+    if (calMonthData[monthKey]) {
+      // Verificar si el día existe dentro del mes
+      if (calMonthData[monthKey][day]) {
+        // Si el día existe, actualizar las calorías sumando el nuevo valor
+        await collection.updateOne(
+          { email: userEmail, [`CalMonth.${monthKey}.${day}`]: { $exists: true } },
+          {
+            $inc: { [`CalMonth.${monthKey}.${day}.calories`]: calories.value }
+          }
+        );
+        return res.status(200).json({ message: 'Calories updated successfully' });
+      } else {
+        // Si el día no existe, insertar el nuevo registro
+        await collection.updateOne(
+          { email: userEmail },
+          {
+            $set: { [`CalMonth.${monthKey}.${day}`]: { calories: calories.value, date: todayDate } }
+          },
+          { upsert: true }
+        );
+        return res.status(201).json({ message: 'Calories created successfully' });
+      }
+    } else {
+      // Si el mes no existe, crear el mes y el día
+      await collection.updateOne(
+        { email: userEmail },
+        {
+          $set: { [`CalMonth.${monthKey}`]: { [day]: { calories: calories.value, date: todayDate } } }
+        },
+        { upsert: true }
+      );
+      return res.status(201).json({ message: 'Month and day created successfully' });
+    }
   } catch (error) {
     console.error('Error updating calories:', error);
     res.status(500).json({ message: 'Error updating calories' });
