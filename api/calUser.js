@@ -61,7 +61,6 @@ router.put('/cal', async (req, res) => {
         $set: { 
           'calories.$[elem].value': calories.value, 
           'calories.$[elem].date': new Date(calories.date),
-          ...CalMonth,
           'CalMonth': CalMonth,
         }
       },
