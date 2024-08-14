@@ -55,36 +55,37 @@ router.get('/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
+
     // Obtener el mes y día actuales en español
-const currentDate = new Date();
-const currentMonth = currentDate.toLocaleString('es-ES', { month: 'long' }); // Mes en español, por ejemplo, "agosto"
-const currentDay = currentDate.getDate(); // Día del mes, por ejemplo, 14
+    const currentDate = new Date();
+    const currentMonth = currentDate.toLocaleString('es-ES', { month: 'long' }); // Mes en español, por ejemplo, "agosto"
+    const currentDay = currentDate.getDate(); // Día del mes, por ejemplo, 14
 
-// Verificar si el usuario tiene registros de calorías o en CalMonth para el mes y día actuales
-const user = await collection.findOne({
-  email: userEmail,
-  $or: [
-    { 'calories.0': { $exists: true } },
-    { [`CalMonth.${currentMonth}.days.${currentDay}.calories`]: { $exists: true } }
-  ]
-});
+    // Verificar si el usuario tiene registros de calorías o en CalMonth para el mes y día actuales
+    const user = await collection.findOne({
+      email: userEmail,
+      $or: [
+        { 'calories.0': { $exists: true } },
+        { [`CalMonth.${currentMonth}.days.${currentDay}.calories`]: { $exists: true } }
+      ]
+    });
 
-   // Verificar si existen registros en 'calories' y en 'CalMonth'
-if (
-  user &&
-  user.calories &&
-  user.calories.length > 0 &&
-  user.CalMonth &&
-  user.CalMonth[currentMonth] &&
-  user.CalMonth[currentMonth].days &&
-  user.CalMonth[currentMonth].days[currentDay] &&
-  user.CalMonth[currentMonth].days[currentDay].calories
-) {
-  return res.status(200).json({ 
-    calories: user.calories,
-    CalMonth: user.CalMonth
-  });
-}
+    // Verificar si existen registros en 'calories' y en 'CalMonth'
+    if (
+      user &&
+      user.calories &&
+      user.calories.length > 0 &&
+      user.CalMonth &&
+      user.CalMonth[currentMonth] &&
+      user.CalMonth[currentMonth].days &&
+      user.CalMonth[currentMonth].days[currentDay] &&
+      user.CalMonth[currentMonth].days[currentDay].calories
+    ) {
+      return res.status(200).json({ 
+        calories: user.calories,
+        CalMonth: user.CalMonth
+      });
+    }
     res.status(404).json({ message: 'No se encontraron registros de calorías para este usuario' });
   } catch (error) {
     console.error('Error al recuperar las calorías:', error);
@@ -92,7 +93,6 @@ if (
   }
 });
 
-// Actualizar calorías (PUT)
 // Actualizar calorías (PUT)
 router.put('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
@@ -102,14 +102,15 @@ router.put('/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-    // Actualizar el documento
 
-    // Traducir el mes al español
-    const translatedMonth = translateMonthToSpanish(currentMonth);
     // Extraer mes y día del objeto CalMonth
     const [currentMonth] = Object.keys(CalMonth);
     const [currentDay] = Object.keys(CalMonth[currentMonth].days);
     const updatedCalories = CalMonth[currentMonth].days[currentDay].calories;
+
+    // Traducir el mes al español
+    const translatedMonth = translateMonthToSpanish(currentMonth);
+
     // Actualizar el documento
     const result = await collection.updateOne(
       { email: userEmail },
@@ -121,10 +122,11 @@ router.put('/cal', async (req, res) => {
         }
       },
       { 
-        arrayFilters: [{ 'elem.value': { $exists: true } }],
+        arrayFilters: [{ 'elem.date': new Date(calories.date) }],
         upsert: true 
       }
     );
+
     if (result.modifiedCount > 0 || result.upsertedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
     }
@@ -134,8 +136,6 @@ router.put('/cal', async (req, res) => {
     res.status(500).json({ message: 'Error updating calories' });
   }
 });
-
-    
 
 // Crear o actualizar calorías (POST)
 router.post('/cal', async (req, res) => {
@@ -155,13 +155,6 @@ router.post('/cal', async (req, res) => {
 
     // Traducir el mes al español
     const translatedMonth = translateMonthToSpanish(currentMonth);
-
-    // Buscar el usuario
-    const user = await collection.findOne({ email: userEmail });
-
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
-    }
 
     // Actualizar o agregar el mes y el día
     const result = await collection.updateOne(
