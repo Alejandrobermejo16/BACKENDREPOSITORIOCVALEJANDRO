@@ -3,8 +3,6 @@ const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
-const cron = require('node-cron');
-
 
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
