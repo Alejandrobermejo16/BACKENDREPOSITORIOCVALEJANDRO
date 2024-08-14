@@ -122,12 +122,12 @@ router.put('/cal', async (req, res) => {
         }
       },
       { 
-        arrayFilters: [{ 'elem.date': new Date(calories.date) }],
-        upsert: true 
+        arrayFilters: [{ 'elem.date': new Date(calories.date).toISOString() }],
+        upsert: false // Considera no usar upsert si solo deseas actualizar
       }
     );
 
-    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+    if (result.modifiedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
     }
     res.status(404).json({ message: 'User not found or no calories to update' });
@@ -136,6 +136,7 @@ router.put('/cal', async (req, res) => {
     res.status(500).json({ message: 'Error updating calories' });
   }
 });
+
 
 // Crear o actualizar calorías (POST)
 router.post('/cal', async (req, res) => {
