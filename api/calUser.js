@@ -81,7 +81,7 @@ router.put('/cal', async (req, res) => {
       { email: userEmail },
       { 
         $set: { 
-          [updatePath]: calories,
+          [updatePath]: calories.value,
           'calories.value': calories.value,
           'calories.date': new Date(calories.date),
         }
