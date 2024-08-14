@@ -9,18 +9,18 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 // Mapa de traducción de meses
 const monthTranslations = {
-  'January': 'Enero',
-  'February': 'Febrero',
-  'March': 'Marzo',
-  'April': 'Abril',
-  'May': 'Mayo',
-  'June': 'Junio',
-  'July': 'Julio',
-  'August': 'Agosto',
-  'September': 'Septiembre',
-  'October': 'Octubre',
-  'November': 'Noviembre',
-  'December': 'Diciembre'
+  'January': 'enero',
+  'February': 'febrero',
+  'March': 'marzo',
+  'April': 'abril',
+  'May': 'mayo',
+  'June': 'junio',
+  'July': 'julio',
+  'August': 'agosto',
+  'September': 'septiembre',
+  'October': 'octubre',
+  'November': 'noviembre',
+  'December': 'diciembre'
 };
 
 function translateMonthToSpanish(month) {
