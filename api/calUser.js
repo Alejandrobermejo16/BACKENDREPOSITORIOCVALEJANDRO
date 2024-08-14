@@ -123,7 +123,7 @@ router.put('/cal', async (req, res) => {
       },
       { 
         arrayFilters: [{ 'elem.date': new Date(calories.date).toISOString() }],
-        upsert: false // Considera no usar upsert si solo deseas actualizar
+        upsert: true 
       }
     );
 
