@@ -51,58 +51,103 @@ router.put('/cal', async (req, res) => {
   if (!userEmail || calories == null || !CalMonth) {
     return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
+
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-    // Actualizar el documento
-    const result = await collection.updateOne(
+
+    // Extraer mes y día del objeto CalMonth
+    const [currentMonth] = Object.keys(CalMonth);
+    const [currentDay] = Object.keys(CalMonth[currentMonth].days);
+    const updatedCalories = CalMonth[currentMonth].days[currentDay].calories;
+
+    // Buscar el usuario
+    const user = await collection.findOne({ email: userEmail });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verificar si el mes y el día existen en el documento del usuario
+    const monthExists = user.CalMonth && user.CalMonth[currentMonth];
+    const dayExists = monthExists && user.CalMonth[currentMonth].days && user.CalMonth[currentMonth].days[currentDay];
+
+    if (!monthExists || !dayExists) {
+      return res.status(404).json({ message: 'Month or day not found' });
+    }
+
+    // Actualizar las calorías solo si hay cambios
+    const updateResult = await collection.updateOne(
       { email: userEmail },
-      { 
-        $set: { 
-          'calories.$[elem].value': calories.value, 
+      {
+        $set: {
+          [`CalMonth.${currentMonth}.days.${currentDay}.calories`]: updatedCalories,
+          'calories.$[elem].value': calories.value,
           'calories.$[elem].date': new Date(calories.date),
-          'CalMonth': CalMonth,
         }
       },
-      { 
-        arrayFilters: [{ 'elem.value': { $exists: true } }],
-        upsert: true 
+      {
+        arrayFilters: [{ 'elem.date': { $eq: new Date(calories.date).toISOString() } }],
+        upsert: false
       }
     );
-    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+
+    if (updateResult.modifiedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
     }
-    res.status(404).json({ message: 'User not found or no calories to update' });
+
+    res.status(404).json({ message: 'No changes detected or record not found' });
   } catch (error) {
     console.error('Error updating calories:', error);
     res.status(500).json({ message: 'Error updating calories' });
   }
 });
-// Crear un nuevo registro de calorías (POST)
+
+
+// Crear o actualizar calorías (POST)
 router.post('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
   if (!userEmail || calories == null || !CalMonth) {
     return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
+
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-    // Actualizar o insertar el documento
+
+    // Extraer mes y día del objeto CalMonth
+    const [currentMonth] = Object.keys(CalMonth);
+    const [currentDay] = Object.keys(CalMonth[currentMonth].days);
+    const updatedCalories = CalMonth[currentMonth].days[currentDay].calories;
+
+    // Buscar el usuario
+    const user = await collection.findOne({ email: userEmail });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Actualizar o agregar el mes y el día
     const result = await collection.updateOne(
       { email: userEmail },
-      { 
-        $push: { calories: { value: calories.value, date: new Date(calories.date) } },
-        $set: CalMonth,
-        $set: { 'CalMonth': CalMonth }
+      {
+        $set: {
+          // Crear o actualizar el mes con el día y las calorías
+          [`CalMonth.${currentMonth}.days.${currentDay}.calories`]: updatedCalories,
+        },
+        $push: { calories: { value: calories.value, date: new Date(calories.date) } }
       },
       { upsert: true }
     );
+
     res.status(201).json({ message: 'Calories created successfully', data: result });
   } catch (error) {
     console.error('Error creating calories:', error);
     res.status(500).json({ message: 'Error creating calories' });
   }
 });
+
+
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
   console.error('Error en Express middleware:', err);
