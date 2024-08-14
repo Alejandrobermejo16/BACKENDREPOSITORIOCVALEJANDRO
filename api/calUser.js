@@ -54,30 +54,36 @@ router.put('/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
+
+    // Buscar el documento del usuario
+    const user = await collection.findOne({ email: userEmail });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     // Actualizar el documento
     const result = await collection.updateOne(
-      { email: userEmail },
+      { email: userEmail, 'calories.date': new Date(calories.date) },
       { 
         $set: { 
-          'calories.$[elem].value': calories.value, 
-          'calories.$[elem].date': new Date(calories.date),
+          'calories.$.value': calories.value,
           'CalMonth': CalMonth,
         }
-      },
-      { 
-        arrayFilters: [{ 'elem.value': { $exists: true } }],
-        upsert: true 
       }
     );
-    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+
+    if (result.modifiedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
     }
-    res.status(404).json({ message: 'User not found or no calories to update' });
+
+    res.status(404).json({ message: 'No calories to update' });
   } catch (error) {
     console.error('Error updating calories:', error);
     res.status(500).json({ message: 'Error updating calories' });
   }
 });
+
 // Crear un nuevo registro de calorías (POST)
 router.post('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
