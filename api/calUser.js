@@ -103,6 +103,14 @@ router.put('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
     // Actualizar el documento
+
+    // Traducir el mes al español
+    const translatedMonth = translateMonthToSpanish(currentMonth);
+    // Extraer mes y día del objeto CalMonth
+    const [currentMonth] = Object.keys(CalMonth);
+    const [currentDay] = Object.keys(CalMonth[currentMonth].days);
+    const updatedCalories = CalMonth[currentMonth].days[currentDay].calories;
+    // Actualizar el documento
     const result = await collection.updateOne(
       { email: userEmail },
       { 
