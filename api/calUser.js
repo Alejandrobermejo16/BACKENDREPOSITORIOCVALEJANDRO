@@ -48,25 +48,38 @@ router.use(async (req, res, next) => {
 
 // Verificar si el usuario tiene registros de calorías
 router.get('/cal', async (req, res) => {
-  const { userEmail } = req.query;
-  if (!userEmail) {
-    return res.status(400).json({ message: 'Se requiere el correo electrónico' });
+  const { userEmail, month, day } = req.query;
+
+  // Verificar que se proporcionen todos los parámetros necesarios
+  if (!userEmail || !month || !day) {
+    return res.status(400).json({ message: 'Se requieren el correo electrónico, el mes y el día' });
   }
+
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-    const user = await collection.findOne(
-      { email: userEmail, 'calories.0': { $exists: true } }
-    );
-    if (user && user.calories && user.calories.length > 0) {
-      return res.status(200).json({ calories: user.calories });
+
+    // Buscar el usuario que tenga calorías o un registro en CalMonth para el mes y día especificados
+    const user = await collection.findOne({
+      email: userEmail,
+      $or: [
+        { 'calories.0': { $exists: true } },
+        { [`CalMonth.${month}.days.${day}.calories`]: { $exists: true } }
+      ]
+    });
+
+    // Verificar si se encontraron registros y devolver la respuesta correspondiente
+    if (user) {
+      return res.status(200).json({ message: 'Registro encontrado', user });
+    } else {
+      return res.status(404).json({ message: 'No se encontraron registros de calorías o CalMonth para este usuario' });
     }
-    res.status(404).json({ message: 'No se encontraron registros de calorías para este usuario' });
   } catch (error) {
-    console.error('Error al recuperar las calorías:', error);
-    res.status(500).json({ message: 'Error al recuperar las calorías' });
+    console.error('Error al recuperar los registros:', error);
+    res.status(500).json({ message: 'Error al recuperar los registros' });
   }
 });
+
 
 // Actualizar calorías (PUT)
 router.put('/cal', async (req, res) => {
