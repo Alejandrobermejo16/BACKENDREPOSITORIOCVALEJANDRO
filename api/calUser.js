@@ -49,6 +49,9 @@ router.get('/cal', async (req, res) => {
 router.put('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
 
+
+
+
   if (!userEmail || calories == null || !CalMonth) {
     return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
@@ -57,6 +60,13 @@ router.put('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
+    // Obtener la fecha actual
+    const fechaActual = new Date();
+
+    // Formatear mes y día en español
+    const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
+    const dia = fechaActual.getDate(); // Día actual del mes
+
     // Buscar el documento del usuario
     const user = await collection.findOne({ email: userEmail });
 
@@ -64,14 +74,16 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
+
     // Actualizar el documento
     const result = await collection.updateOne(
       { email: userEmail },
       { 
         $set: { 
+          [updatePath]: calories,
           'calories.value': calories.value,
           'calories.date': new Date(calories.date),
-          'CalMonth': CalMonth
         }
       }
     );
