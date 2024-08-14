@@ -55,14 +55,10 @@ router.get('/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-    const user = await collection.findOne({
-      email: userEmail,
-      $or: [
-        { 'calories.0': { $exists: true } },
-        { [`CalMonth.${month}.days.${day}.calories`]: { $exists: true } }
-      ]
-    });
-    if (user && user.calories && user.calories.length > 0 && user.CalMonth) {
+    const user = await collection.findOne(
+      { email: userEmail, 'calories.0': { $exists: true } }
+    );
+    if (user && user.calories && user.calories.length > 0) {
       return res.status(200).json({ calories: user.calories });
     }
     res.status(404).json({ message: 'No se encontraron registros de calorías para este usuario' });
