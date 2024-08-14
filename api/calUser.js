@@ -61,7 +61,7 @@ router.put('/cal', async (req, res) => {
         $set: { 
           'calories.$[elem].value': calories.value, 
           'calories.$[elem].date': new Date(calories.date),
-          ...CalMonth
+          ...CalMonth,
           'CalMonth': CalMonth,
         }
       },
@@ -93,7 +93,7 @@ router.post('/cal', async (req, res) => {
       { email: userEmail },
       { 
         $push: { calories: { value: calories.value, date: new Date(calories.date) } },
-        $set: CalMonth
+        $set: CalMonth,
         $set: { 'CalMonth': CalMonth }
       },
       { upsert: true }
