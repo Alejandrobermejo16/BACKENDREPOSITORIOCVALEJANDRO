@@ -48,9 +48,11 @@ router.get('/cal', async (req, res) => {
 // Actualizar calorías (PUT)
 router.put('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
+
   if (!userEmail || calories == null || !CalMonth) {
     return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
+
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
@@ -66,13 +68,10 @@ router.put('/cal', async (req, res) => {
     const result = await collection.updateOne(
       { email: userEmail },
       { 
-        $inc:{
-          'calories.$.value': calories.value,
-
-        },
         $set: { 
-          'CalMonth': CalMonth,
-          'calories.date': new Date(calories.date)
+          'calories.value': calories.value,
+          'calories.date': new Date(calories.date),
+          'CalMonth': CalMonth
         }
       }
     );
@@ -87,6 +86,7 @@ router.put('/cal', async (req, res) => {
     res.status(500).json({ message: 'Error updating calories' });
   }
 });
+
 
 // Crear un nuevo registro de calorías (POST)
 router.post('/cal', async (req, res) => {
