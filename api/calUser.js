@@ -3,6 +3,7 @@ const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
+const cron = require('node-cron');
 
 const router = express.Router();
 const uri = process.env.MONGODB_URI;
@@ -39,12 +40,11 @@ router.get('/cal', async (req, res) => {
     const collection = db.collection('users');
 
     const user = await collection.findOne(
-      { email: userEmail },
-      { projection: { calories: 1, CalMonth: 1 } }
+      { email: userEmail, 'calories.0': { $exists: true } }
     );
 
-    if (user) {
-      return res.status(200).json(user);
+    if (user && user.calories && user.calories.length > 0) {
+      return res.status(200).json({ calories: user.calories });
     }
 
     res.status(404).json({ message: 'No calories record found for this user' });
@@ -54,7 +54,7 @@ router.get('/cal', async (req, res) => {
   }
 });
 
-// Actualizar o insertar calorías (POST/PUT)
+// Actualizar calorías (PUT)
 router.put('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
 
@@ -66,52 +66,64 @@ router.put('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
-    const currentDate = new Date(calories.date);
-    const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
-    const currentDay = currentDate.getDate();
+    // Actualizar el documento
+    const result = await collection.updateOne(
+      { email: userEmail },
+      { 
+        $set: { 
+          'calories.$[elem].value': calories.value, 
+          'calories.$[elem].date': new Date(calories.date),
+          'CalMonth': CalMonth,
+        }
+      },
+      { 
+        arrayFilters: [{ 'elem.value': { $exists: true } }],
+        upsert: true 
+      }
+    );
 
-    const user = await collection.findOne({ email: userEmail });
-
-    if (user) {
-      // Si ya existe un registro de calorías para el día actual, sumamos las nuevas calorías
-      const existingCalories = user.CalMonth?.[currentMonth]?.days?.[currentDay]?.calories || 0;
-      const updatedCalories = existingCalories + calories.value;
-
-      // Actualizamos el registro de calorías del usuario
-      const result = await collection.updateOne(
-        { email: userEmail },
-        {
-          $set: {
-            'calories.value': updatedCalories,
-            'calories.date': currentDate,
-            [`CalMonth.${currentMonth}.days.${currentDay}.calories`]: updatedCalories
-          }
-        },
-        { upsert: true }
-      );
-
-      return res.status(200).json({ message: 'Calories updated successfully', data: result });
-    } else {
-      // Si el usuario no existe, creamos un nuevo documento para él
-      const result = await collection.updateOne(
-        { email: userEmail },
-        {
-          $set: {
-            'calories.value': calories.value,
-            'calories.date': currentDate,
-            [`CalMonth.${currentMonth}.days.${currentDay}.calories`]: calories.value
-          }
-        },
-        { upsert: true }
-      );
-
-      return res.status(201).json({ message: 'Calories created successfully', data: result });
+    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+      return res.status(200).json({ message: 'Calories updated successfully' });
     }
+
+    res.status(404).json({ message: 'User not found or no calories to update' });
   } catch (error) {
     console.error('Error updating calories:', error);
     res.status(500).json({ message: 'Error updating calories' });
   }
 });
+
+
+
+// Crear un nuevo registro de calorías (POST)
+router.post('/cal', async (req, res) => {
+  const { userEmail, calories, CalMonth } = req.body;
+
+  if (!userEmail || calories == null || !CalMonth) {
+    return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
+  }
+
+  try {
+    const db = req.dbClient.db('abmUsers');
+    const collection = db.collection('users');
+
+    // Actualizar o insertar el documento
+    const result = await collection.updateOne(
+      { email: userEmail },
+      { 
+        $push: { calories: { value: calories.value, date: new Date(calories.date) } },
+        $set: { 'CalMonth': CalMonth }
+      },
+      { upsert: true }
+    );
+
+    res.status(201).json({ message: 'Calories created successfully', data: result });
+  } catch (error) {
+    console.error('Error creating calories:', error);
+    res.status(500).json({ message: 'Error creating calories' });
+  }
+});
+
 
 // Middleware de manejo de errores
 router.use((err, req, res, next) => {
