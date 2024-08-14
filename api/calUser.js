@@ -55,12 +55,36 @@ router.get('/cal', async (req, res) => {
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-    const user = await collection.findOne(
-      { email: userEmail, 'calories.0': { $exists: true } }
-    );
-    if (user && user.calories && user.calories.length > 0) {
-      return res.status(200).json({ calories: user.calories });
-    }
+    // Obtener el mes y día actuales en español
+const currentDate = new Date();
+const currentMonth = currentDate.toLocaleString('es-ES', { month: 'long' }); // Mes en español, por ejemplo, "agosto"
+const currentDay = currentDate.getDate(); // Día del mes, por ejemplo, 14
+
+// Verificar si el usuario tiene registros de calorías o en CalMonth para el mes y día actuales
+const user = await collection.findOne({
+  email: userEmail,
+  $or: [
+    { 'calories.0': { $exists: true } },
+    { [`CalMonth.${currentMonth}.days.${currentDay}.calories`]: { $exists: true } }
+  ]
+});
+
+   // Verificar si existen registros en 'calories' y en 'CalMonth'
+if (
+  user &&
+  user.calories &&
+  user.calories.length > 0 &&
+  user.CalMonth &&
+  user.CalMonth[currentMonth] &&
+  user.CalMonth[currentMonth].days &&
+  user.CalMonth[currentMonth].days[currentDay] &&
+  user.CalMonth[currentMonth].days[currentDay].calories
+) {
+  return res.status(200).json({ 
+    calories: user.calories,
+    CalMonth: user.CalMonth
+  });
+}
     res.status(404).json({ message: 'No se encontraron registros de calorías para este usuario' });
   } catch (error) {
     console.error('Error al recuperar las calorías:', error);
