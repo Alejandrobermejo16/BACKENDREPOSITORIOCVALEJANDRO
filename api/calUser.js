@@ -54,14 +54,20 @@ router.put('/cal', async (req, res) => {
 
   const todayDate = new Date(calories.date);
   const day = todayDate.getDate(); // Día del mes
-  const month = todayDate.getMonth() + 1; // Mes en formato 1-12
+  const monthIndex = todayDate.getMonth(); // Índice del mes (0-11)
   const year = todayDate.getFullYear(); // Año actual
-  const monthKey = `${year}-${month.toString().padStart(2, '0')}`; // Clave del mes en formato YYYY-MM
+
+  // Convertir índice del mes a nombre del mes
+  const months = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+  ];
+  const monthName = months[monthIndex]; // Nombre del mes en español
 
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-    
+
     // Encontrar el usuario
     const user = await collection.findOne({ email: userEmail });
     if (!user) {
@@ -72,37 +78,40 @@ router.put('/cal', async (req, res) => {
     const calMonthData = user.CalMonth || {};
 
     // Verificar si el mes existe en CalMonth
-    if (calMonthData[monthKey]) {
+    if (calMonthData[monthName]) {
       // Verificar si el día existe dentro del mes
-      if (calMonthData[monthKey][day]) {
+      if (calMonthData[monthName][day]) {
         // Si el día existe, actualizar las calorías sumando el nuevo valor
         await collection.updateOne(
-          { email: userEmail, [`CalMonth.${monthKey}.${day}`]: { $exists: true } },
+          { email: userEmail, [`CalMonth.${monthName}.${day}`]: { $exists: true } },
           {
-            $inc: { [`CalMonth.${monthKey}.${day}.calories`]: calories.value }
+            $inc: { [`CalMonth.${monthName}.${day}.calories`]: calories.value }
           }
         );
+        console.log('Calories updated successfully:', { userEmail, day, monthName });
         return res.status(200).json({ message: 'Calories updated successfully' });
       } else {
         // Si el día no existe, insertar el nuevo registro
         await collection.updateOne(
           { email: userEmail },
           {
-            $set: { [`CalMonth.${monthKey}.${day}`]: { calories: calories.value, date: todayDate } }
+            $set: { [`CalMonth.${monthName}.${day}`]: { calories: calories.value, date: todayDate } }
           },
           { upsert: true }
         );
-        return res.status(201).json({ message: 'Calories created successfully' });
+        console.log('Day created successfully:', { userEmail, day, monthName });
+        return res.status(201).json({ message: 'Day created successfully' });
       }
     } else {
       // Si el mes no existe, crear el mes y el día
       await collection.updateOne(
         { email: userEmail },
         {
-          $set: { [`CalMonth.${monthKey}`]: { [day]: { calories: calories.value, date: todayDate } } }
+          $set: { [`CalMonth.${monthName}`]: { [day]: { calories: calories.value, date: todayDate } } }
         },
         { upsert: true }
       );
+      console.log('Month and day created successfully:', { userEmail, day, monthName });
       return res.status(201).json({ message: 'Month and day created successfully' });
     }
   } catch (error) {
