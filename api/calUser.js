@@ -93,65 +93,41 @@ if (
 });
 
 // Actualizar calorías (PUT)
+// Actualizar calorías (PUT)
 router.put('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
   if (!userEmail || calories == null || !CalMonth) {
-    return res.status(400).json({ message: 'Correo electrónico, calorías y CalMonth son requeridos' });
+    return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
-
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-
-    // Extraer mes y día del objeto CalMonth
-    const [currentMonth] = Object.keys(CalMonth);
-    const [currentDay] = Object.keys(CalMonth[currentMonth].days);
-    const updatedCalories = CalMonth[currentMonth].days[currentDay].calories;
-
-    // Traducir el mes al español
-    const translatedMonth = translateMonthToSpanish(currentMonth);
-
-    // Buscar el usuario
-    const user = await collection.findOne({ email: userEmail });
-
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
-    }
-
-    // Verificar si el mes y el día existen en el documento del usuario
-    const monthExists = user.CalMonth && user.CalMonth[translatedMonth];
-    const dayExists = monthExists && user.CalMonth[translatedMonth].days && user.CalMonth[translatedMonth].days[currentDay];
-
-    if (!monthExists || !dayExists) {
-      return res.status(404).json({ message: 'Mes o día no encontrado' });
-    }
-
-    // Actualizar las calorías solo si hay cambios
-    const updateResult = await collection.updateOne(
+    // Actualizar el documento
+    const result = await collection.updateOne(
       { email: userEmail },
-      {
-        $set: {
-          [`CalMonth.${translatedMonth}.days.${currentDay}.calories`]: updatedCalories,
-          'calories.$[elem].value': calories.value,
+      { 
+        $set: { 
+          'calories.$[elem].value': calories.value, 
           'calories.$[elem].date': new Date(calories.date),
+          [`CalMonth.${translatedMonth}.days.${currentDay}.calories`]: updatedCalories,
         }
       },
-      {
-        arrayFilters: [{ 'elem.date': { $eq: new Date(calories.date).toISOString() } }],
-        upsert: false
+      { 
+        arrayFilters: [{ 'elem.value': { $exists: true } }],
+        upsert: true 
       }
     );
-
-    if (updateResult.modifiedCount > 0) {
-      return res.status(200).json({ message: 'Calorías actualizadas correctamente' });
+    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+      return res.status(200).json({ message: 'Calories updated successfully' });
     }
-
-    res.status(404).json({ message: 'No se detectaron cambios o registro no encontrado' });
+    res.status(404).json({ message: 'User not found or no calories to update' });
   } catch (error) {
-    console.error('Error al actualizar las calorías:', error);
-    res.status(500).json({ message: 'Error al actualizar las calorías' });
+    console.error('Error updating calories:', error);
+    res.status(500).json({ message: 'Error updating calories' });
   }
 });
+
+    
 
 // Crear o actualizar calorías (POST)
 router.post('/cal', async (req, res) => {
