@@ -69,7 +69,7 @@ router.put('/cal', async (req, res) => {
         upsert: true 
       }
     );
-    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+    if (result) {
       return res.status(200).json({ message: 'Calories updated successfully' });
     }
     res.status(404).json({ message: 'User not found or no calories to update' });
