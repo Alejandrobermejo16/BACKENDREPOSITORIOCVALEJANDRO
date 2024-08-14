@@ -64,7 +64,7 @@ router.put('/cal', async (req, res) => {
 
     // Actualizar el documento
     const result = await collection.updateOne(
-      { email: userEmail, 'calories.date': new Date(calories.date) },
+      { email: userEmail },
       { 
         $inc:{
           'calories.$.value': calories.value,
@@ -72,6 +72,7 @@ router.put('/cal', async (req, res) => {
         },
         $set: { 
           'CalMonth': CalMonth,
+          'calories.date': new Date(calories.date)
         }
       }
     );
