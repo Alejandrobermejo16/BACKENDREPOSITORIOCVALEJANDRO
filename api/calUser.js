@@ -193,12 +193,14 @@ router.put('/cal', async (req, res) => {
     // Obtener la fecha actual
     const fechaActual = new Date();
 
-    // Formatear mes y día en español
+    // Formatear mes en español
     const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
-    const dia = fechaActual.getDate(); // Día actual del mes
+
+    // El día se obtiene del cuerpo de la solicitud
+    const dia = CalMonth.day; // Día proporcionado en la solicitud
 
     // Construir la ruta de actualización dinámica para `CalMonth`
-    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
+    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}`;
 
     // Verificar si el usuario existe
     const user = await collection.findOne({ email: userEmail });
@@ -210,38 +212,60 @@ router.put('/cal', async (req, res) => {
     // Obtener el índice del último elemento del array `calories`
     const lastIndex = user.calories.length - 1;
 
-    // Comprobar si el día actual existe en CalMonth
-    const dayExists = user.CalMonth?.[mesActualEnEspañol]?.days?.hasOwnProperty(dia);
+    // Comprobar si el día actual existe en los datos del usuario
+    const dayExists = user.CalMonth?.[mesActualEnEspañol]?.days?.[dia];
 
     let updateResult;
     if (dayExists) {
-      // Si el día ya existe, actualizar la entrada existente en CalMonth y en calories
+      // Si el día ya existe, actualizar el objeto del día con las nuevas calorías y fecha
       updateResult = await collection.updateOne(
         { email: userEmail },
         {
           $set: {
             [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías en el array
             [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha en el array
-            [updatePath]: calories.value // Actualiza el campo en `CalMonth`
-          }
-        }
-      );
-    } else {
-      // Si el día no existe, agregar un nuevo día en CalMonth y actualizar calories
-      updateResult = await collection.updateOne(
-        { email: userEmail },
-        {
-          $set: {
-            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías en el array
-            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha en el array
-            [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: {
-              calories: calories.value,
-              date: new Date(calories.date) // Establece la fecha del nuevo día
+            [updatePath]: {
+              value: calories.value, // Actualiza el valor de calorías del día
+              date: new Date(calories.date) // Actualiza la fecha del día
             }
           }
         }
       );
+    } else {
+      // Si el día no existe, agregar un nuevo día en `days` y actualizar `calories`
+      updateResult = await collection.updateOne(
+        { email: userEmail },
+        {
+          $set: {
+            [`calories.${lastIndex + 1}`]: {
+              value: calories.value, // Agrega el nuevo valor de calorías en el array
+              date: new Date(calories.date) // Agrega la nueva fecha en el array
+            },
+            [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: {
+              value: calories.value, // Crea el valor de calorías del nuevo día
+              date: new Date(calories.date) // Crea la fecha del nuevo día
+            }
+          }
+        },
+        { upsert: true } // Asegura que se cree el documento si no existe
+      );
     }
+
+    if (updateResult.modifiedCount > 0) {
+      return res.status(200).json({ message: 'Calories updated successfully' });
+    } else {
+      return res.status(404).json({ message: 'No calories to update' });
+    }
+
+  } catch (error) {
+    console.error('Error actualizando las calorías:', error);
+    return res.status(500).json({
+      message: 'Error actualizando las calorías',
+      errorDetails: error.message
+    });
+  }
+});
+
 
     if (updateResult.modifiedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
