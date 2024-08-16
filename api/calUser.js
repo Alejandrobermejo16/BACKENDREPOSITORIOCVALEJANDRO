@@ -190,17 +190,13 @@ router.put('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
-    const dayPath = `CalMonth.${mesActualEnEspañol}.days.${dia}`;
-
     // Obtener la fecha actual
     const fechaActual = new Date();
-
-    // Formatear mes y día en español
     const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
     const dia = fechaActual.getDate(); // Día actual del mes
 
     // Construir la ruta de actualización dinámica para `CalMonth`
-    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
+    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}`;
 
     // Verificar si el usuario existe
     const user = await collection.findOne({ email: userEmail });
@@ -208,8 +204,6 @@ router.put('/cal', async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-
-
 
     // Obtener el índice del último elemento del array `calories`
     const lastIndex = user.calories.length - 1;
@@ -226,7 +220,7 @@ router.put('/cal', async (req, res) => {
           $set: {
             [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías en el array
             [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha en el array
-            [updatePath]: calories.value // Actualiza el campo en `CalMonth`
+            [`${updatePath}.calories`]: calories.value // Actualiza el campo en `CalMonth`
           }
         }
       );
@@ -236,15 +230,12 @@ router.put('/cal', async (req, res) => {
         { email: userEmail },
         {
           $set: {
-            [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: { // Crea un objeto en la clave dinámica
-              [dayPath]: { // Crea un objeto en la clave dinámica
-                value: calories.value, // Propiedad dentro del objeto
-                date: new Date(calories.date) // Otra propiedad dentro del objeto
-              }
-            },
             [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías en el array
             [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha en el array
-            
+            [`${updatePath}`]: {
+              value: calories.value, // Propiedad dentro del objeto
+              date: new Date(calories.date) // Otra propiedad dentro del objeto
+            }
           }
         }
       );
