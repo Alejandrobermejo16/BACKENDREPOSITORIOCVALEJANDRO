@@ -188,7 +188,7 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Verificar si el mes existe
+    // Comprobar la existencia del mes
     if (!user.CalMonth) {
       // Crear la estructura completa si CalMonth no existe
       await collection.updateOne(
