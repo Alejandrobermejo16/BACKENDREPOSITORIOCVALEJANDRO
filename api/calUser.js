@@ -180,22 +180,15 @@ router.get('/cal', async (req, res) => {
 // });
 
 router.put('/cal', async (req, res) => {
-  const { userEmail, calories, CalMonth, dia } = req.body;
+  const { userEmail, calories, CalMonth } = req.body;
 
-  if (!userEmail || calories == null || !CalMonth || dia == null) {
-    return res.status(400).json({ message: 'Email, calories, CalMonth, and day are required' });
+  if (!userEmail || !calories || !CalMonth) {
+    return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
-  
+
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-    
-    // Formatear mes y día en español
-    const fechaActual = new Date();
-    const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
-
-    // Construir la ruta de actualización dinámica para `CalMonth`
-    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
 
     // Verificar si el usuario existe
     const user = await collection.findOne({ email: userEmail });
@@ -203,38 +196,36 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Obtener el índice del último elemento del array `calories`
-    const lastIndex = user.calories.length - 1;
+    // Extraer el mes y el día de CalMonth
+    const [mesActualEnEspañol, dias] = Object.entries(CalMonth)[0];
+    const [dia, caloriasDelDia] = Object.entries(dias.days)[0];
 
-    // Comprobar si el día especificado existe en CalMonth
+    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}`;
+
+    // Verificar si el día específico existe en CalMonth
     const dayExists = user.CalMonth?.[mesActualEnEspañol]?.days?.hasOwnProperty(dia);
 
     let updateResult;
     if (dayExists) {
-      // Si el día ya existe, actualizar la entrada existente en CalMonth y en calories
+      // Si el día ya existe, actualizar la entrada existente en CalMonth
       updateResult = await collection.updateOne(
         { email: userEmail },
         {
           $set: {
-            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías en el array
-            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha en el array
-            [updatePath]: calories.value // Actualiza el campo en `CalMonth`
+            [updatePath]: {
+              calories: calories.value // Actualiza el valor de calorías
+            }
           }
         }
       );
     } else {
-      // Si el día no existe, agregar un nuevo día en CalMonth y actualizar calories
+      // Si el día no existe, agregar un nuevo día en CalMonth
       updateResult = await collection.updateOne(
         { email: userEmail },
         {
           $set: {
-            [`calories.${lastIndex + 1}`]: {
-              value: calories.value,
-              date: new Date(calories.date)
-            },
             [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: {
-              calories: calories.value,
-              date: new Date(calories.date) // Establece la fecha del nuevo día
+              calories: calories.value // Establece las calorías del nuevo día
             }
           }
         }
@@ -242,22 +233,6 @@ router.put('/cal', async (req, res) => {
     }
 
     if (updateResult.modifiedCount > 0 || updateResult.upsertedCount > 0) {
-      return res.status(200).json({ message: 'Calories updated successfully' });
-    } else {
-      return res.status(404).json({ message: 'No calories to update' });
-    }
-
-  } catch (error) {
-    console.error('Error actualizando las calorías:', error);
-    return res.status(500).json({
-      message: 'Error actualizando las calorías',
-      errorDetails: error.message
-    });
-  }
-});
-
-
-    if (updateResult.modifiedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
     } else {
       return res.status(404).json({ message: 'No calories to update' });
