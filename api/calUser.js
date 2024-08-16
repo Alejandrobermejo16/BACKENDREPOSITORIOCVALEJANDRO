@@ -216,7 +216,6 @@ router.put('/cal', async (req, res) => {
 
     // Comprobar si el día actual existe en CalMonth
     const dayExists = user.CalMonth?.[mesActualEnEspañol]?.days?.hasOwnProperty(dia);
-    const dayDataFrontal = days[diaActual] || {}; 
 
     let updateResult;
     if (dayExists) {
@@ -237,7 +236,7 @@ router.put('/cal', async (req, res) => {
         { email: userEmail },
         {
           $set: {
-            [`CalMonth.${mesActualEnEspañol}.days`]: { // Crea un objeto en la clave dinámica
+            [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: { // Crea un objeto en la clave dinámica
               [dayPath]: { // Crea un objeto en la clave dinámica
                 value: calories.value, // Propiedad dentro del objeto
                 date: new Date(calories.date) // Otra propiedad dentro del objeto
