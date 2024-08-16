@@ -75,18 +75,27 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Si el array `calories` está vacío, no hay nada que actualizar
+    if (user.calories.length === 0) {
+      return res.status(400).json({ message: 'No calorie entries found to update' });
+    }
+
+    // Obtener el índice del último elemento del array `calories`
+    const lastIndex = user.calories.length - 1;
+
+    // Actualizar el último elemento del array `calories`
     const result = await collection.updateOne(
       { email: userEmail },
       {
         $set: {
-          [updatePath]: calories.value,  // Actualiza las calorías en la ruta dinámica
           [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
           [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
+          [updatePath]: calories.value // Actualiza el campo en `CalMonth`
         }
       }
     );
 
-    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+    if (result.modifiedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
     } else {
       return res.status(404).json({ message: 'No calories to update' });
@@ -94,12 +103,13 @@ router.put('/cal', async (req, res) => {
 
   } catch (error) {
     console.error('Error actualizando las calorías:', error);
-    return res.status(500).json({ 
-      message: 'Error actualizando las calorías', 
-      errorDetails: error.message 
+    return res.status(500).json({
+      message: 'Error actualizando las calorías',
+      errorDetails: error.message
     });
   }
 });
+
 
 
 
