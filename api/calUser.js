@@ -45,6 +45,7 @@ router.get('/cal', async (req, res) => {
     res.status(500).json({ message: 'Error retrieving calories' });
   }
 });
+
 router.put('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
 
@@ -70,7 +71,7 @@ router.put('/cal', async (req, res) => {
     console.log("calories.value:", calories.value);
     console.log("calories.date:", calories.date);
 
-    // Verificar si el usuario existe y la estructura básica
+    // Verificar si el usuario existe
     const user = await collection.findOne({ email: userEmail });
 
     if (!user) {
@@ -80,15 +81,17 @@ router.put('/cal', async (req, res) => {
     // Actualizar el documento en MongoDB
     const result = await collection.updateOne(
       { email: userEmail },
-      { 
-        $set: { 
+      {
+        $set: {
           [updatePath]: calories.value,  // Actualiza las calorías en la ruta dinámica
           'calories.value': calories.value,
+          'calories.date': new Date(calories.date)
         }
-      }
+      },
+      { upsert: true } // Crea el documento si no existe
     );
 
-    if (result.modifiedCount > 0) {
+    if (result.modifiedCount > 0 || result.upsertedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
     } else {
       return res.status(404).json({ message: 'No calories to update' });
@@ -96,9 +99,13 @@ router.put('/cal', async (req, res) => {
 
   } catch (error) {
     console.error('Error actualizando las calorías:', error);
-    return res.status(500).json({ message: 'Error actualizando las calorías', errorDetails: error });
+    return res.status(500).json({ 
+      message: 'Error actualizando las calorías', 
+      errorDetails: error.message 
+    });
   }
 });
+
 
 
 
