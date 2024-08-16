@@ -24,27 +24,79 @@ router.use(async (req, res, next) => {
     res.status(500).json({ message: 'Error connecting to database' });
   }
 });
-// Verificar si el usuario tiene registros de calorías
+// // Verificar si el usuario tiene registros de calorías
+// router.get('/cal', async (req, res) => {
+//   const { userEmail } = req.query;
+//   if (!userEmail) {
+//     return res.status(400).json({ message: 'Email is required' });
+//   }
+//   try {
+//     const db = req.dbClient.db('abmUsers');
+//     const collection = db.collection('users');
+//     const user = await collection.findOne(
+//       { email: userEmail, 'calories.0': { $exists: true } }
+//     );
+//     if (user && user.calories && user.calories.length > 0) {
+//       return res.status(200).json({ calories: user.calories });
+//     }
+//     res.status(404).json({ message: 'No calories record found for this user' });
+//   } catch (error) {
+//     console.error('Error retrieving calories:', error);
+//     res.status(500).json({ message: 'Error retrieving calories' });
+//   }
+// });
+
 router.get('/cal', async (req, res) => {
   const { userEmail } = req.query;
   if (!userEmail) {
     return res.status(400).json({ message: 'Email is required' });
   }
+  
+  const fechaActual = new Date();
+  const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
+  const dia = fechaActual.getDate(); // Día actual del mes
+
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
     const user = await collection.findOne(
-      { email: userEmail, 'calories.0': { $exists: true } }
+      { email: userEmail }
     );
-    if (user && user.calories && user.calories.length > 0) {
-      return res.status(200).json({ calories: user.calories });
+
+    if (user) {
+      const calMonth = user.CalMonth || {};
+      const monthExists = calMonth[mesActualEnEspañol];
+      const dayExists = monthExists && calMonth[mesActualEnEspañol].days && calMonth[mesActualEnEspañol].days[dia];
+      
+      if (dayExists) {
+        return res.status(200).json({
+          calories: user.calories,
+          CalMonth: {
+            [mesActualEnEspañol]: {
+              days: {
+                [dia]: dayExists
+              }
+            }
+          }
+        });
+      } else {
+        return res.status(200).json({
+          calories: user.calories,
+          CalMonth: {
+            [mesActualEnEspañol]: {
+              days: {}
+            }
+          }
+        });
+      }
     }
-    res.status(404).json({ message: 'No calories record found for this user' });
+    res.status(404).json({ message: 'No records found for this user' });
   } catch (error) {
     console.error('Error retrieving calories:', error);
     res.status(500).json({ message: 'Error retrieving calories' });
   }
 });
+
 
 //PETICION PUT
 router.put('/cal', async (req, res) => {
