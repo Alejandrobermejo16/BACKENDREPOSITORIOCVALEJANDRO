@@ -180,10 +180,10 @@ router.get('/cal', async (req, res) => {
 // });
 
 router.put('/cal', async (req, res) => {
-  const { userEmail, CalMonth } = req.body;
+  const { userEmail, calories, CalMonth } = req.body;
 
-  if (!userEmail || !CalMonth || !CalMonth.months || CalMonth.months.length === 0) {
-    return res.status(400).json({ message: 'Email and CalMonth with at least one month and day are required' });
+  if (!userEmail || !calories || !CalMonth) {
+    return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
 
   try {
@@ -196,25 +196,27 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const { name: mesActualEnEspañol, days } = CalMonth.months[0];
-    const { day: dia, calories, date } = days[0];
+    // Extraer el mes y los días de CalMonth
+    const [mesActualEnEspañol, dias] = Object.entries(CalMonth)[0];
+    const days = dias.days;
 
-    // Buscar si el mes ya existe en la base de datos
+    // Asegurarse de que el mes existe en el documento del usuario
     const monthIndex = user.CalMonth?.months?.findIndex(m => m.name === mesActualEnEspañol);
 
     let updateResult;
+
     if (monthIndex >= 0) {
       // Si el mes existe, verificar si el día ya está registrado
-      const dayIndex = user.CalMonth.months[monthIndex].days.findIndex(d => d.day === dia);
+      const dayIndex = user.CalMonth.months[monthIndex].days.findIndex(d => d.day === calories.date.split('T')[0].split('-')[2]);
 
       if (dayIndex >= 0) {
         // Actualizar las calorías para el día existente
         updateResult = await collection.updateOne(
-          { email: userEmail, [`CalMonth.months.${monthIndex}.days.day`]: dia },
+          { email: userEmail, [`CalMonth.months.${monthIndex}.days.day`]: calories.date.split('T')[0].split('-')[2] },
           {
             $set: {
-              [`CalMonth.months.${monthIndex}.days.${dayIndex}.calories`]: calories,
-              [`CalMonth.months.${monthIndex}.days.${dayIndex}.date`]: date
+              [`CalMonth.months.${monthIndex}.days.${dayIndex}.calories`]: calories.value,
+              [`CalMonth.months.${monthIndex}.days.${dayIndex}.date`]: calories.date
             }
           }
         );
@@ -225,9 +227,9 @@ router.put('/cal', async (req, res) => {
           {
             $push: {
               [`CalMonth.months.${monthIndex}.days`]: {
-                day: dia,
-                calories: calories,
-                date: date
+                day: parseInt(calories.date.split('T')[0].split('-')[2]),
+                calories: calories.value,
+                date: calories.date
               }
             }
           }
@@ -242,9 +244,9 @@ router.put('/cal', async (req, res) => {
             "CalMonth.months": {
               name: mesActualEnEspañol,
               days: [{
-                day: dia,
-                calories: calories,
-                date: date
+                day: parseInt(calories.date.split('T')[0].split('-')[2]),
+                calories: calories.value,
+                date: calories.date
               }]
             }
           }
