@@ -45,7 +45,7 @@ router.get('/cal', async (req, res) => {
       const calMonth = user.CalMonth || {};
       const monthExists = calMonth[mesActualEnEspañol];
       const dayExists = monthExists && calMonth[mesActualEnEspañol].days && calMonth[mesActualEnEspañol].days[dia];
-      
+
       if (user.calories && user.calories.length > 0) {
         // Usuario tiene calorías registradas
         if (monthExists) {
@@ -53,6 +53,7 @@ router.get('/cal', async (req, res) => {
           if (dayExists) {
             // El día actual existe dentro del mes
             return res.status(200).json({
+              status: "success",
               message: "Calorías y calorías mensuales recuperadas",
               calories: user.calories,
               CalMonth: {
@@ -66,6 +67,7 @@ router.get('/cal', async (req, res) => {
           } else {
             // El día actual no existe dentro del mes
             return res.status(200).json({
+              status: "missing_day",
               message: "Calorías registradas, pero no se encontró el día actual en el mes",
               calories: user.calories,
               CalMonth: {
@@ -78,6 +80,7 @@ router.get('/cal', async (req, res) => {
         } else {
           // El mes actual no existe
           return res.status(200).json({
+            status: "missing_month",
             message: "Calorías registradas, pero no se encontró el mes actual",
             calories: user.calories,
             CalMonth: {
@@ -90,6 +93,7 @@ router.get('/cal', async (req, res) => {
       } else {
         // Usuario no tiene calorías registradas
         return res.status(200).json({
+          status: "no_calories",
           message: "No se encontraron calorías registradas para el usuario",
           calories: user.calories,
           CalMonth: {
@@ -101,11 +105,11 @@ router.get('/cal', async (req, res) => {
       }
     } else {
       // Usuario no encontrado
-      res.status(404).json({ message: 'No records found for this user' });
+      res.status(404).json({ status: "not_found", message: 'No records found for this user' });
     }
   } catch (error) {
     console.error('Error retrieving calories:', error);
-    res.status(500).json({ message: 'Error retrieving calories' });
+    res.status(500).json({ status: "error", message: 'Error retrieving calories' });
   }
 });
 
