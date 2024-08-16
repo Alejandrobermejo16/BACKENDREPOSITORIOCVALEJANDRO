@@ -204,13 +204,6 @@ router.put('/cal', async (req, res) => {
           [updatePath]: calories.value // Actualiza el campo en `CalMonth`
         }
       },
-      {
-        $push: {
-          [`CalMonth.months.${monthIndex}.days`]: {
-            day: 11, // Día del nuevo registro
-            calories: 123, // Valor de calorías de prueba
-            date: "2024-08-17T00:00:00.000Z" // Fecha de prueba
-          }}}
     );
     if (result.modifiedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
