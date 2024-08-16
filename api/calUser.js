@@ -190,6 +190,8 @@ router.put('/cal', async (req, res) => {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
 
+    const dayPath = `CalMonth.${mesActualEnEspañol}.days.${dia}`;
+
     // Obtener la fecha actual
     const fechaActual = new Date();
 
@@ -199,7 +201,6 @@ router.put('/cal', async (req, res) => {
 
     // Construir la ruta de actualización dinámica para `CalMonth`
     const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
-    
 
     // Verificar si el usuario existe
     const user = await collection.findOne({ email: userEmail });
@@ -235,15 +236,15 @@ router.put('/cal', async (req, res) => {
         { email: userEmail },
         {
           $set: {
+            [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: { // Crea un objeto en la clave dinámica
+              [dayPath]: { // Crea un objeto en la clave dinámica
+                value: calories.value, // Propiedad dentro del objeto
+                date: new Date(calories.date) // Otra propiedad dentro del objeto
+              }
+            },
             [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías en el array
             [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha en el array
-            [`CalMonth.${mesActualEnEspañol}.days`]: {
-              [dia]: ${dia}{
-                calories: calories.value,
-                date: new Date(calories.date) // Establece la fecha del nuevo día
-              }
-              
-            }
+            
           }
         }
       );
