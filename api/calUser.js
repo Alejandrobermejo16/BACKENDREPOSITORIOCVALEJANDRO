@@ -84,7 +84,6 @@ router.put('/cal', async (req, res) => {
         $set: { 
           [updatePath]: calories.value,  // Actualiza las calorías en la ruta dinámica
           'calories.value': calories.value,
-          'calories.date': new Date(calories.date),
         }
       }
     );
