@@ -186,11 +186,12 @@ router.put('/cal', async (req, res) => {
     return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
   }
 
+  // Registrar el contenido de CalMonth en la consola
+  console.log('CalMonth received:', CalMonth);
+
   try {
     const db = req.dbClient.db('abmUsers');
     const collection = db.collection('users');
-
-    const dayPath = `CalMonth.${mesActualEnEspañol}.days.${dia}`;
 
     // Obtener la fecha actual
     const fechaActual = new Date();
@@ -209,14 +210,12 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-
-
     // Obtener el índice del último elemento del array `calories`
     const lastIndex = user.calories.length - 1;
 
     // Comprobar si el día actual existe en CalMonth
     const dayExists = user.CalMonth?.[mesActualEnEspañol]?.days?.hasOwnProperty(dia);
-    const dayDataFrontal = days[diaActual] || {}; 
+    const dayDataFrontal = CalMonth?.[mesActualEnEspañol]?.days?.[dia] || {}; // Accede a los datos del día específico que se está enviando
 
     let updateResult;
     if (dayExists) {
@@ -236,16 +235,13 @@ router.put('/cal', async (req, res) => {
       updateResult = await collection.updateOne(
         { email: userEmail },
         {
-          $push: {
-            [`CalMonth.${mesActualEnEspañol}.days`]: { // Crea un objeto en la clave dinámica
-              [dayDataFrontal]: { 
-                value: calories.value, // Propiedad dentro del objeto
-                date: new Date(calories.date) // Otra propiedad dentro del objeto
-              }
-            },
+          $set: {
             [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías en el array
             [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha en el array
-            
+            [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: { // Crea un objeto en la clave dinámica
+              value: calories.value, // Propiedad dentro del objeto
+              date: new Date(calories.date) // Otra propiedad dentro del objeto
+            }
           }
         }
       );
@@ -265,6 +261,7 @@ router.put('/cal', async (req, res) => {
     });
   }
 });
+
 
 
 
