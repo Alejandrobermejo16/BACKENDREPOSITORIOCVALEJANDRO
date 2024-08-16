@@ -45,12 +45,8 @@ router.get('/cal', async (req, res) => {
     res.status(500).json({ message: 'Error retrieving calories' });
   }
 });
-// Actualizar calorías (PUT)
 router.put('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
-
-
-
 
   if (!userEmail || calories == null || !CalMonth) {
     return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
@@ -67,21 +63,26 @@ router.put('/cal', async (req, res) => {
     const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
     const dia = fechaActual.getDate(); // Día actual del mes
 
-    // Buscar el documento del usuario
+    // Construir la ruta de actualización dinámica
+    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
+
+    console.log("updatePath:", updatePath);
+    console.log("calories.value:", calories.value);
+    console.log("calories.date:", calories.date);
+
+    // Verificar si el usuario existe y la estructura básica
     const user = await collection.findOne({ email: userEmail });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
-
-    // Actualizar el documento
+    // Actualizar el documento en MongoDB
     const result = await collection.updateOne(
       { email: userEmail },
       { 
         $set: { 
-          [updatePath]: calories.value,
+          [updatePath]: calories.value,  // Actualiza las calorías en la ruta dinámica
           'calories.value': calories.value,
           'calories.date': new Date(calories.date),
         }
@@ -90,14 +91,16 @@ router.put('/cal', async (req, res) => {
 
     if (result.modifiedCount > 0) {
       return res.status(200).json({ message: 'Calories updated successfully' });
+    } else {
+      return res.status(404).json({ message: 'No calories to update' });
     }
 
-    res.status(404).json({ message: 'No calories to update' });
   } catch (error) {
-    console.error('Error updating calories:', error);
-    res.status(500).json({ message: 'Error updating calories' });
+    console.error('Error actualizando las calorías:', error);
+    return res.status(500).json({ message: 'Error actualizando las calorías', errorDetails: error });
   }
 });
+
 
 
 // Crear un nuevo registro de calorías (POST)
