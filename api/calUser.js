@@ -196,58 +196,36 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Extraer el mes y los días de CalMonth
+    // Extraer el mes y el día de CalMonth
     const [mesActualEnEspañol, dias] = Object.entries(CalMonth)[0];
-    const days = dias.days;
+    const [dia, caloriasDelDia] = Object.entries(dias.days)[0];
 
-    // Asegurarse de que el mes existe en el documento del usuario
-    const monthIndex = user.CalMonth?.months?.findIndex(m => m.name === mesActualEnEspañol);
+    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}`;
+
+    // Verificar si el día específico existe en CalMonth
+    const dayExists = user.CalMonth?.[mesActualEnEspañol]?.days?.hasOwnProperty(dia);
 
     let updateResult;
-
-    if (monthIndex >= 0) {
-      // Si el mes existe, verificar si el día ya está registrado
-      const dayIndex = user.CalMonth.months[monthIndex].days.findIndex(d => d.day === calories.date.split('T')[0].split('-')[2]);
-
-      if (dayIndex >= 0) {
-        // Actualizar las calorías para el día existente
-        updateResult = await collection.updateOne(
-          { email: userEmail, [`CalMonth.months.${monthIndex}.days.day`]: calories.date.split('T')[0].split('-')[2] },
-          {
-            $set: {
-              [`CalMonth.months.${monthIndex}.days.${dayIndex}.calories`]: calories.value,
-              [`CalMonth.months.${monthIndex}.days.${dayIndex}.date`]: calories.date
-            }
-          }
-        );
-      } else {
-        // Agregar un nuevo día al mes existente
-        updateResult = await collection.updateOne(
-          { email: userEmail },
-          {
-            $push: {
-              [`CalMonth.months.${monthIndex}.days`]: {
-                day: parseInt(calories.date.split('T')[0].split('-')[2]),
-                calories: calories.value,
-                date: calories.date
-              }
-            }
-          }
-        );
-      }
-    } else {
-      // Si el mes no existe, agregar un nuevo mes con el día correspondiente
+    if (dayExists) {
+      // Si el día ya existe, actualizar la entrada existente en CalMonth
       updateResult = await collection.updateOne(
         { email: userEmail },
         {
-          $push: {
-            "CalMonth.months": {
-              name: mesActualEnEspañol,
-              days: [{
-                day: parseInt(calories.date.split('T')[0].split('-')[2]),
-                calories: calories.value,
-                date: calories.date
-              }]
+          $set: {
+            [updatePath]: {
+              calories: calories.value // Actualiza el valor de calorías
+            }
+          }
+        }
+      );
+    } else {
+      // Si el día no existe, agregar un nuevo día en CalMonth
+      updateResult = await collection.updateOne(
+        { email: userEmail },
+        {
+          $set: {
+            [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: {
+              calories: calories.value // Establece las calorías del nuevo día
             }
           }
         }
@@ -268,7 +246,6 @@ router.put('/cal', async (req, res) => {
     });
   }
 });
-
 
 
 
