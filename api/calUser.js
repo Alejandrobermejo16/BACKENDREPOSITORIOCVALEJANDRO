@@ -267,25 +267,6 @@ router.put('/cal', async (req, res) => {
 });
 
 
-    if (updateResult.modifiedCount > 0) {
-      return res.status(200).json({ message: 'Calories updated successfully' });
-    } else {
-      return res.status(404).json({ message: 'No calories to update' });
-    }
-
-  } catch (error) {
-    console.error('Error actualizando las calorías:', error);
-    return res.status(500).json({
-      message: 'Error actualizando las calorías',
-      errorDetails: error.message
-    });
-  }
-});
-
-
-
-
-
 // Crear un nuevo registro de calorías (POST)
 router.post('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
