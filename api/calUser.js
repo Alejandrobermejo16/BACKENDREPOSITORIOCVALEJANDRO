@@ -75,21 +75,15 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Actualizar el documento en MongoDB
     const result = await collection.updateOne(
       { email: userEmail },
       {
         $set: {
           [updatePath]: calories.value,  // Actualiza las calorías en la ruta dinámica
-        },
-        $push: {
-          'calories': {
-            value: calories.value,
-            date: new Date(calories.date) // Asegúrate de que la fecha sea en formato ISO.
-          }
+          'calories.value': calories.value,
+          'calories.date': new Date(calories.date) // Actualiza el único registro de calorías
         }
-      },
-      { upsert: true } // Crea el documento si no existe
+      }
     );
 
     if (result.modifiedCount > 0 || result.upsertedCount > 0) {
