@@ -178,6 +178,7 @@ router.get('/cal', async (req, res) => {
 //     });
 //   }
 // });
+
 router.put('/cal', async (req, res) => {
   const { userEmail, calories, CalMonth } = req.body;
 
@@ -197,7 +198,8 @@ router.put('/cal', async (req, res) => {
     const dia = fechaActual.getDate(); // Día actual del mes
 
     // Construir la ruta de actualización dinámica para `CalMonth`
-    const updatePath = `CalMonth.${mesActualEnEspañol}.days`;
+    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
+    
 
     // Verificar si el usuario existe
     const user = await collection.findOne({ email: userEmail });
@@ -206,11 +208,13 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+
+
     // Obtener el índice del último elemento del array `calories`
     const lastIndex = user.calories.length - 1;
 
     // Comprobar si el día actual existe en CalMonth
-    const dayExists = user.CalMonth?.[mesActualEnEspañol]?.days?.some(day => day.hasOwnProperty(dia));
+    const dayExists = user.CalMonth?.[mesActualEnEspañol]?.days?.hasOwnProperty(dia);
 
     let updateResult;
     if (dayExists) {
@@ -221,26 +225,25 @@ router.put('/cal', async (req, res) => {
           $set: {
             [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías en el array
             [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha en el array
-            [`CalMonth.${mesActualEnEspañol}.days.${dia}.calories`]: calories.value // Actualiza el valor de calorías del día
+            [updatePath]: calories.value // Actualiza el campo en `CalMonth`
           }
         }
       );
     } else {
-      // Si el día no existe, agregar un nuevo día en el array `days` y actualizar calories
+      // Si el día no existe, agregar un nuevo día en CalMonth y actualizar calories
       updateResult = await collection.updateOne(
         { email: userEmail },
         {
-          $push: {
+          $set: {
+            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías en el array
+            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha en el array
             [`CalMonth.${mesActualEnEspañol}.days`]: {
-              [dia]: {
-                value: calories.value,
+              [dia]: ${dia}{
+                calories: calories.value,
                 date: new Date(calories.date) // Establece la fecha del nuevo día
               }
+              
             }
-          },
-          $set: {
-            [`calories.${lastIndex + 1}.value`]: calories.value, // Agrega el nuevo valor de calorías en el array
-            [`calories.${lastIndex + 1}.date`]: new Date(calories.date) // Agrega la nueva fecha en el array
           }
         }
       );
