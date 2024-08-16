@@ -193,6 +193,8 @@ router.put('/cal', async (req, res) => {
     // Formatear mes y día en español
     const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
     const dia = fechaActual.getDate(); // Día actual del mes
+    const diafrotal = `CalMonth.${mesActualEnEspañol}.days.${dia}`;
+
     // Construir la ruta de actualización dinámica para `CalMonth`
     const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
     // Verificar si el usuario existe
@@ -228,7 +230,7 @@ router.put('/cal', async (req, res) => {
           $set: {
             [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías en el array
             [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha en el array
-            [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: {
+            [`CalMonth.${mesActualEnEspañol}.days.${diafrotal}`]: {
               calories: calories.value,
               date: new Date(calories.date) // Establece la fecha del nuevo día
             }
