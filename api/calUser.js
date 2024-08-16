@@ -224,6 +224,8 @@ router.put('/cal', async (req, res) => {
         { email: userEmail },
         {
           $set: {
+            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
+            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
             [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: {
               calories: calories.value // Establece las calorías del nuevo día
             }
