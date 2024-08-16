@@ -181,7 +181,6 @@ router.put('/cal', async (req, res) => {
     const fechaActual = new Date();
     const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
     const dia = fechaActual.getDate();
-    const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
 
     // Verificar si el usuario existe
     const user = await collection.findOne({ email: userEmail });
@@ -189,9 +188,9 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Comprobar la existencia del mes y el día
+    // Verificar si el mes existe
     if (!user.CalMonth) {
-      // Si CalMonth no existe, crear la estructura completa
+      // Crear la estructura completa si CalMonth no existe
       await collection.updateOne(
         { email: userEmail },
         {
@@ -210,7 +209,7 @@ router.put('/cal', async (req, res) => {
     }
 
     if (!user.CalMonth[mesActualEnEspañol]) {
-      // Si el mes no existe, crear el mes con el día y calorías
+      // Crear el mes con el día y calorías si el mes no existe
       await collection.updateOne(
         { email: userEmail },
         {
@@ -229,7 +228,7 @@ router.put('/cal', async (req, res) => {
     }
 
     if (!user.CalMonth[mesActualEnEspañol].days[dia]) {
-      // Si el día no existe, añadir el día con calorías
+      // Añadir el día con calorías si el día no existe
       await collection.updateOne(
         { email: userEmail },
         {
@@ -265,6 +264,7 @@ router.put('/cal', async (req, res) => {
     });
   }
 });
+
 
 
 
