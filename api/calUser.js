@@ -131,11 +131,14 @@ router.put('/cal', async (req, res) => {
     const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
     const dia = fechaActual.getDate();
 
+
     // Verificar si el usuario existe
     const user = await collection.findOne({ email: userEmail });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    const lastIndex = user.calories ? user.calories.length - 1 : 0;
 
     // Comprobar la existencia del mes
     if (!user.CalMonth) {
