@@ -116,6 +116,57 @@ router.get('/cal', async (req, res) => {
 
 
 //PETICION PUT
+//  router.put('/cal', async (req, res) => {
+//    const { userEmail, calories, CalMonth } = req.body;
+//    if (!userEmail || calories == null || !CalMonth) {
+//      return res.status(400).json({ message: 'Email, calories, and CalMonth are required' });
+//    }
+//    try {
+//      const db = req.dbClient.db('abmUsers');
+//      const collection = db.collection('users');
+//      // Obtener la fecha actual
+//      const fechaActual = new Date();
+//      // Formatear mes y día en español
+//      const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
+//      const dia = fechaActual.getDate(); // Día actual del mes
+//      // Construir la ruta de actualización dinámica para `CalMonth`
+//      const updatePath = `CalMonth.${mesActualEnEspañol}.days.${dia}.calories`;
+//      // Verificar si el usuario existe
+//      const user = await collection.findOne({ email: userEmail });
+//      if (!user) {
+//        return res.status(404).json({ message: 'User not found' });
+//      }
+//      // Si el array `calories` está vacío, no hay nada que actualizar
+//      if (user.calories.length === 0) {
+//        return res.status(400).json({ message: 'No calorie entries found to update' });
+//      }
+//      // Obtener el índice del último elemento del array `calories`
+//      const lastIndex = user.calories.length - 1;
+//      // Actualizar el último elemento del array `calories`
+//      const result = await collection.updateOne(
+//        { email: userEmail },
+//        {
+//          $set: {
+//            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
+//            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
+//            [updatePath]: calories.value // Actualiza el campo en `CalMonth`
+//          }
+//        }
+//      );
+//      if (result.modifiedCount > 0) {
+//        return res.status(200).json({ message: 'Calories updated successfully' });
+//      } else {
+//        return res.status(404).json({ message: 'No calories to update' });
+//      }
+//    } catch (error) {
+//      console.error('Error actualizando las calorías:', error);
+//      return res.status(500).json({
+//        message: 'Error actualizando las calorías',
+//        errorDetails: error.message
+//      });
+//    }
+//  });
+
 router.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
   if (!userEmail || calories == null) {
@@ -131,14 +182,11 @@ router.put('/cal', async (req, res) => {
     const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
     const dia = fechaActual.getDate();
 
-
     // Verificar si el usuario existe
     const user = await collection.findOne({ email: userEmail });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-
-    const lastIndex = user.calories ? user.calories.length - 1 : 0;
 
     // Comprobar la existencia del mes
     if (!user.CalMonth) {
@@ -153,14 +201,11 @@ router.put('/cal', async (req, res) => {
                   calories: calories.value
                 }
               }
-            },
-            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
-            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
+            }
           }
         }
       );
-      return res.status(200).json({ message: 'Month and day added with calories',  calories: calories.value,
-        calMonth: updatedUser.CalMonth});
+      return res.status(200).json({ message: 'Month and day added with calories' });
     }
 
     if (!user.CalMonth[mesActualEnEspañol]) {
@@ -175,14 +220,11 @@ router.put('/cal', async (req, res) => {
                   calories: calories.value
                 }
               }
-            },
-            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
-            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
+            }
           }
         }
       );
-      return res.status(200).json({ message: 'Month added with day and calories', calories: calories.value,
-        calMonth: updatedUser.CalMonth });
+      return res.status(200).json({ message: 'Month added with day and calories' });
     }
 
     if (!user.CalMonth[mesActualEnEspañol].days[dia]) {
@@ -193,14 +235,11 @@ router.put('/cal', async (req, res) => {
           $set: {
             [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: {
               calories: calories.value
-            },
-            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
-            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
+            }
           }
         }
       );
-      return res.status(200).json({ message: 'Day added with calories', calories: calories.value,
-        calMonth: updatedUser.CalMonth });
+      return res.status(200).json({ message: 'Day added with calories' });
     }
 
     // Si el mes y el día existen, actualizar las calorías del último día del mes
@@ -211,14 +250,11 @@ router.put('/cal', async (req, res) => {
       { email: userEmail },
       {
         $set: {
-          [`CalMonth.${mesActualEnEspañol}.days.${lastDay}.calories`]: calories.value,
-          [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
-          [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
+          [`CalMonth.${mesActualEnEspañol}.days.${lastDay}.calories`]: calories.value
         }
       }
     );
-    return res.status(200).json({ message: 'Calories updated for the last day of the month', calories: calories.value,
-      calMonth: updatedUser.CalMonth });
+    return res.status(200).json({ message: 'Calories updated for the last day of the month' });
 
   } catch (error) {
     console.error('Error actualizando las calorías:', error);
