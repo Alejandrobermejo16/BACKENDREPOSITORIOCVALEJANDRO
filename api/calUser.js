@@ -169,8 +169,8 @@ router.get('/cal', async (req, res) => {
 
 router.put('/cal', async (req, res) => {
   const { userEmail, calories } = req.body;
-  if (!userEmail || calories == null) {
-    return res.status(400).json({ message: 'Email and calories are required' });
+  if (!userEmail || calories == null || !calories.value || !calories.date) {
+    return res.status(400).json({ message: 'Email, calories value, and date are required' });
   }
 
   try {
@@ -188,6 +188,9 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Índice para el nuevo registro de calorías
+    const lastIndex = user.calories ? user.calories.length : 0;
+
     // Comprobar la existencia del mes
     if (!user.CalMonth) {
       // Crear la estructura completa si CalMonth no existe
@@ -201,6 +204,10 @@ router.put('/cal', async (req, res) => {
                   calories: calories.value
                 }
               }
+            },
+            [`calories.${lastIndex}`]: {
+              value: calories.value,
+              date: new Date(calories.date)
             }
           }
         }
@@ -220,6 +227,10 @@ router.put('/cal', async (req, res) => {
                   calories: calories.value
                 }
               }
+            },
+            [`calories.${lastIndex}`]: {
+              value: calories.value,
+              date: new Date(calories.date)
             }
           }
         }
@@ -235,6 +246,10 @@ router.put('/cal', async (req, res) => {
           $set: {
             [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: {
               calories: calories.value
+            },
+            [`calories.${lastIndex}`]: {
+              value: calories.value,
+              date: new Date(calories.date)
             }
           }
         }
@@ -250,7 +265,11 @@ router.put('/cal', async (req, res) => {
       { email: userEmail },
       {
         $set: {
-          [`CalMonth.${mesActualEnEspañol}.days.${lastDay}.calories`]: calories.value
+          [`CalMonth.${mesActualEnEspañol}.days.${lastDay}.calories`]: calories.value,
+          [`calories.${lastIndex}`]: {
+            value: calories.value,
+            date: new Date(calories.date)
+          }
         }
       }
     );
@@ -264,6 +283,7 @@ router.put('/cal', async (req, res) => {
     });
   }
 });
+
 
 
 
