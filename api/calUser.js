@@ -150,7 +150,9 @@ router.put('/cal', async (req, res) => {
                   calories: calories.value
                 }
               }
-            }
+            },
+            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
+            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
           }
         }
       );
@@ -170,7 +172,9 @@ router.put('/cal', async (req, res) => {
                   calories: calories.value
                 }
               }
-            }
+            },
+            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
+            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
           }
         }
       );
@@ -186,7 +190,9 @@ router.put('/cal', async (req, res) => {
           $set: {
             [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: {
               calories: calories.value
-            }
+            },
+            [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
+            [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
           }
         }
       );
@@ -202,7 +208,9 @@ router.put('/cal', async (req, res) => {
       { email: userEmail },
       {
         $set: {
-          [`CalMonth.${mesActualEnEspañol}.days.${lastDay}.calories`]: calories.value
+          [`CalMonth.${mesActualEnEspañol}.days.${lastDay}.calories`]: calories.value,
+          [`calories.${lastIndex}.value`]: calories.value, // Actualiza el valor de calorías
+          [`calories.${lastIndex}.date`]: new Date(calories.date), // Actualiza la fecha de calorías
         }
       }
     );
