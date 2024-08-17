@@ -188,9 +188,7 @@ router.put('/cal', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Índice para el nuevo registro de calorías
-    const lastIndex = user.calories ? user.calories.length : 0;
-
+    
     // Comprobar la existencia del mes
     if (!user.CalMonth) {
       // Crear la estructura completa si CalMonth no existe
@@ -205,7 +203,7 @@ router.put('/cal', async (req, res) => {
                 }
               }
             },
-            [`calories.${lastIndex}`]: {
+            calories: {
               value: calories.value,
               date: new Date(calories.date)
             }
@@ -228,7 +226,7 @@ router.put('/cal', async (req, res) => {
                 }
               }
             },
-            [`calories.${lastIndex}`]: {
+            calories: {
               value: calories.value,
               date: new Date(calories.date)
             }
@@ -247,7 +245,7 @@ router.put('/cal', async (req, res) => {
             [`CalMonth.${mesActualEnEspañol}.days.${dia}`]: {
               calories: calories.value
             },
-            [`calories.${lastIndex}`]: {
+            calories: {
               value: calories.value,
               date: new Date(calories.date)
             }
@@ -266,7 +264,7 @@ router.put('/cal', async (req, res) => {
       {
         $set: {
           [`CalMonth.${mesActualEnEspañol}.days.${lastDay}.calories`]: calories.value,
-          [`calories.${lastIndex}`]: {
+          calories: {
             value: calories.value,
             date: new Date(calories.date)
           }
