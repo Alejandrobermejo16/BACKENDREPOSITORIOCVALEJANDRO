@@ -98,7 +98,7 @@ router.get('/cal', async (req, res) => {
           calories: user.calories,
           CalMonth: {
             [mesActualEnEspañol]: {
-              days: {}
+              days: {} 
             }
           }
         });
