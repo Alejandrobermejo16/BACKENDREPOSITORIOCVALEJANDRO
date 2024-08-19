@@ -25,16 +25,12 @@ router.use(async (req, res, next) => {
   }
 });
 
-
+//get para confirmar calorias y calorias mensuales
 router.get('/cal', async (req, res) => {
   const { userEmail } = req.query;
   if (!userEmail) {
     return res.status(400).json({ message: 'Email is required' });
   }
-  
-  const fechaActual = new Date();
-  const mesActualEnEspañol = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fechaActual);
-  const dia = fechaActual.getDate(); // Día actual del mes
 
   try {
     const db = req.dbClient.db('abmUsers');
@@ -42,65 +38,23 @@ router.get('/cal', async (req, res) => {
     const user = await collection.findOne({ email: userEmail });
 
     if (user) {
-      const calMonth = user.CalMonth || {};
-      const monthExists = calMonth[mesActualEnEspañol];
-      const dayExists = monthExists && calMonth[mesActualEnEspañol].days && calMonth[mesActualEnEspañol].days[dia];
+      const tieneCalorias = user.calories && user.calories.length > 0;
+      const tieneCaloriasMensuales = user.CalMonth && Object.keys(user.CalMonth).length > 0;
 
-      if (user.calories && user.calories.length > 0) {
-        // Usuario tiene calorías registradas
-        if (monthExists) {
-          // El mes actual existe
-          if (dayExists) {
-            // El día actual existe dentro del mes
-            return res.status(200).json({
-              status: "success",
-              message: "Calorías y calorías mensuales recuperadas",
-              calories: user.calories,
-              CalMonth: {
-                [mesActualEnEspañol]: {
-                  days: {
-                    [dia]: dayExists
-                  }
-                }
-              }
-            });
-          } else {
-            // El día actual no existe dentro del mes
-            return res.status(200).json({
-              status: "missing_day",
-              message: "Calorías registradas, pero no se encontró el día actual en el mes",
-              calories: user.calories,
-              CalMonth: {
-                [mesActualEnEspañol]: {
-                  days: {}
-                }
-              }
-            });
-          }
-        } else {
-          // El mes actual no existe
-          return res.status(200).json({
-            status: "missing_month",
-            message: "Calorías registradas, pero no se encontró el mes actual",
-            calories: user.calories,
-            CalMonth: {
-              [mesActualEnEspañol]: {
-                days: {}
-              }
-            }
-          });
-        }
+      if (tieneCalorias || tieneCaloriasMensuales) {
+        return res.status(200).json({
+          status: "success",
+          message: "El usuario tiene calorías registradas",
+          calories: user.calories || [],
+          CalMonth: user.CalMonth || {}
+        });
       } else {
-        // Usuario no tiene calorías registradas
+        // Usuario no tiene calorías registradas ni calorías mensuales
         return res.status(200).json({
           status: "no_calories",
           message: "No se encontraron calorías registradas para el usuario",
-          calories: user.calories,
-          CalMonth: {
-            [mesActualEnEspañol]: {
-              days: {} 
-            }
-          }
+          calories: [],
+          CalMonth: {}
         });
       }
     } else {
