@@ -11,20 +11,27 @@ const resetCalories = async () => {
     const db = client.db('abmUsers');
     const collection = db.collection('users');
 
-    // Consulta para encontrar usuarios con registros de calorías
-    const usersWithCalories = await collection.find({ 'calories.0': { $exists: true } }).toArray();
-    console.log(`Usuarios encontrados con registros de calorías: ${usersWithCalories.length}`); // Añadido para depuración
+    // Consulta para encontrar usuarios con calorías mayores a cero
+    const usersWithCalories = await collection.find({
+      'calories': {
+        $elemMatch: { value: { $gt: 0 } } // Verifica si hay algún elemento con valor mayor a cero
+      }
+    }).toArray();
+
+    console.log(`Usuarios encontrados con registros de calorías mayores a cero: ${usersWithCalories.length}`); // Añadido para depuración
 
     if (usersWithCalories.length === 0) {
-      console.log('No hay usuarios con registros de calorías.');
-      return 0; // Retorna 0 si no hay usuarios con calorías
+      console.log('No hay usuarios con calorías mayores a cero.');
+      return 0; // Retorna 0 si no hay usuarios con calorías positivas
     }
 
     // Actualiza las calorías de los usuarios encontrados
     const result = await collection.updateMany(
-      { 'calories.0': { $exists: true } },
-      { $set: { 'calories.$[].value': 0 } }
+      { 'calories.value': { $gt: 0 } }, // Filtra los documentos que tengan algún valor mayor a cero
+      { $set: { 'calories.$[elem].value': 0 } }, // Establece el valor de las calorías a cero
+      { arrayFilters: [{ 'elem.value': { $gt: 0 } }] } // Aplica el filtro al array de calorías
     );
+
     console.log(`Calorías actualizadas para ${result.modifiedCount} usuarios.`); // Añadido para depuración
 
     return result.modifiedCount;
