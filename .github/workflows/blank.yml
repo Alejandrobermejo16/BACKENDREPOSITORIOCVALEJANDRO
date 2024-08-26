@@ -2,7 +2,8 @@ name: Reseteo de calorías 4
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '50 12 * * *'
+
   workflow_dispatch: # Permite ejecutar manualmente desde la interfaz de GitHub
 
 jobs:
