@@ -52,7 +52,7 @@ router.post('/getUserByDniAndPassword', async (req, res) => {
 
     // Verificar si se encontró el usuario
     if (!user) {
-      return res.status(404).json({ message: 'User not found or invalid credentials' ,dni, pass }); // 404 Not Found
+      return res.status(404).json({ message: 'User not found or invalid credentials' ,dni, pass }); 
     }
 
     res.status(200).json(user); // Retornar el usuario encontrado
