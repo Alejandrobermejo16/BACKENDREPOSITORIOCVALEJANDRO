@@ -80,9 +80,9 @@ router.post('/createUserBank', async (req, res) => {
 });
 
 // Ruta GET para obtener un usuario por DNI y contraseña
-router.get('/getUserByDniAndPassword', async (req, res) => {
+router.post('/getUserByDniAndPassword', async (req, res) => {
   const dbClient = req.dbClient;
-  const { dni, pass } = req.query; // Obtener DNI y contraseña de los parámetros de consulta
+  const { dni, pass } = req.body; // Obtener DNI y contraseña de los parámetros de consulta
 
   try {
     const database = dbClient.db('abmUsers');
@@ -93,7 +93,6 @@ router.get('/getUserByDniAndPassword', async (req, res) => {
 
     // Verificar si se encontró el usuario
     if (!user) {
-      console.log(req.body,"lo que llega al back");
       return res.status(404).json({ message: 'User not found or invalid credentials' }); // 404 Not Found
     }
 
