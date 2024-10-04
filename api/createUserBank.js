@@ -38,45 +38,46 @@ router.use(async (req, res, next) => {
 });
 // Ruta para crear usuarios
 router.post('/createUserBank', async (req, res) => {
-    // Desestructuramos los campos del cuerpo de la solicitud
-    const { dni, name, pass, card1, card2, account1, account2 } = req.body;
+  // Desestructuramos los campos del cuerpo de la solicitud
+  const { dni, name, pass, card1, card2, account1, account2 } = req.body;
+  
+  console.log("Esto llega al back", req.body);
+
+  // Validación de campos requeridos
+  if (!dni || !name || !pass || !card1 || !card2 || !account1 || !account2) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  const dbClient = req.dbClient;
+
+  try {
+    const database = dbClient.db('abmUsers');
+    const collection = database.collection('usersBank');
+  
+    // Verificamos si el usuario ya existe en la base de datos usando el DNI
+    const existingUser = await collection.findOne({ dni });
     
-    console.log("Esto llega al back", req.body);
-  
-    // Validación de campos requeridos
-    if (!dni || !name || !pass || !card1 || !card2 || !account1 || !account2) {
-      return res.status(400).json({ message: 'All fields are required' });
+    // Si el usuario existe, retornamos el error 409 y terminamos la ejecución aquí
+    if (existingUser) {
+      return res.status(409).json({ message: 'Este usuario ya existe' });
     }
   
-    const dbClient = req.dbClient;
+    // Si el usuario no existe, continuamos con la creación del nuevo usuario
+    const hashedPassword = await bcrypt.hash(pass, 10);
+    const newUser = { dni, name, pass: hashedPassword, card1, card2, account1, account2 };
   
-    try {
-      const database = dbClient.db('abmUsers');
-      const collection = database.collection('usersBank');
+    // Insertamos el nuevo usuario en la base de datos
+    const result = await collection.insertOne(newUser);
   
-      // Verificamos si el usuario ya existe en la base de datos usando el DNI
-      const existingUser = await collection.findOne({ dni });
-      if (existingUser) {
-        return res.status(400).json({ message: 'User already exists' });
-      }
+    // Devolvemos una respuesta exitosa con el estado 201
+    return res.status(201).json({ message: 'Usuario creado correctamente', userId: result.insertedId });
   
-      // Cifrar la contraseña antes de almacenarla
-      const hashedPassword = await bcrypt.hash(pass, 10);
-  
-      // Creamos un nuevo usuario
-      const newUser = { dni, name, pass: hashedPassword, card1, card2, account1, account2 };
-      
-      console.log('New user data:', newUser);
-  
-      // Insertamos el nuevo usuario en la base de datos
-      const result = await collection.insertOne(newUser);
-      
-      res.status(201).json({ message: 'User created successfully', userId: result.insertedId });
-    } catch (error) {
-      console.error('Error al crear usuario:', error);
-      res.status(500).json({ message: 'Error creating user' });
-    }
-  });
+  } catch (error) {
+    console.error('Error al crear usuario:', error);
+    // Devolvemos un error 500 si algo falla en el proceso
+    return res.status(500).json({ message: 'Error creating user' });
+  }
+});
 
 // Ruta GET para obtener un usuario por DNI y contraseña
 router.get('/getUserByDniAndPassword', async (req, res) => {
