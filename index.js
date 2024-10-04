@@ -7,6 +7,7 @@ const logguinUser = require('./api/logguin');
 const calUser = require('./api/calUser');
 const resetCalories = require('./api/resetCalories');
 const createUserBankRouter = require('./api/createUserBank');
+const getUserByDniAndPasswordRouter = require('./api/getUserByDniAndPassword');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 // const setupCronJobs = require('./scripts/resetCalories'); // Importa la configuración del cron job
@@ -83,10 +84,13 @@ app.get('/', (req, res) => {
 });
 
 // Rutas de creación de usuario
+app.use('/api/users/getUserByDniAndPassword', getUserByDniAndPasswordRouter); 
 app.use('/api/users', createUserRouter);
 app.use('/api/users', logguinUser);
 app.use('/api/users', calUser);
 app.use('/api/users', createUserBankRouter);
+app.use('/api/users', getUserByDniAndPassword);
+
 
 // Ruta para restablecer las calorías
 app.post('/api/resetCalories', async (req, res) => {

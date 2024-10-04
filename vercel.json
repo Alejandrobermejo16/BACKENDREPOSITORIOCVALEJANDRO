@@ -35,6 +35,10 @@
       "dest": "/api/createUser.js"
     },
     {
+      "src": "/api/users/getUserByDniAndPassword",
+      "dest": "/api/createUser.js"
+    },
+    {
       "src": "/api/users/create",
       "dest": "/api/createUser.js"
     },
