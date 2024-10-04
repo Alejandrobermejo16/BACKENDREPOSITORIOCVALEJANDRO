@@ -23,6 +23,10 @@
     {
       "src": "api/resetCalories.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/getUserByDniAndPassword.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -36,7 +40,7 @@
     },
     {
       "src": "/api/users/getUserByDniAndPassword",
-      "dest": "/api/createUser.js"
+      "dest": "/api/getUserByDniAndPassword.js"
     },
     {
       "src": "/api/users/create",

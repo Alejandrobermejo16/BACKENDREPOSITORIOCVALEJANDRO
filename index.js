@@ -89,7 +89,7 @@ app.use('/api/users', createUserRouter);
 app.use('/api/users', logguinUser);
 app.use('/api/users', calUser);
 app.use('/api/users', createUserBankRouter);
-app.use('/api/users', getUserByDniAndPassword);
+app.use('/api/users', getUserByDniAndPasswordRouter);
 
 
 // Ruta para restablecer las calorías
