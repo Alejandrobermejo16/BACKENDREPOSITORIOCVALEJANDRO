@@ -41,7 +41,6 @@ router.post('/createUserBank', async (req, res) => {
   // Desestructuramos los campos del cuerpo de la solicitud
   const { dni, name, pass, card1, card2, account1, account2 } = req.body;
   
-  console.log("Esto llega al back", req.body);
 
   // Validación de campos requeridos
   if (!dni || !name || !pass || !card1 || !card2 || !account1 || !account2) {

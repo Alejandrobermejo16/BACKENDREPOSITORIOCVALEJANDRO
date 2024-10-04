@@ -47,11 +47,14 @@ router.post('/getUserByDniAndPassword', async (req, res) => {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('usersBank');
 
-    // Buscar el usuario con el DNI y la contraseña proporcionados
-    const user = await collection.findOne({ dni: dni, pass: password });
+    //verifica en formato hash si la contraseña introducida y convertida a hash es igual que la que hay en la base de datos
+    const isMatch = await bcrypt.compare(password, user.pass);
+
+    // Buscar el usuario con el DNI 
+    const user = await collection.findOne({ dni: dni});
 
     // Verificar si se encontró el usuario
-    if (!user) {
+    if (!user | !isMatch) {
       return res.status(404).json({ message: 'User not found or invalid credentials' ,user }); 
     }
 
