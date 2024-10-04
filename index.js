@@ -6,9 +6,10 @@ const createUserRouter = require('./api/createUser');
 const logguinUser = require('./api/logguin');
 const calUser = require('./api/calUser');
 const resetCalories = require('./api/resetCalories');
+const createUserBankRouter = require('./api/createUserBank');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
-const setupCronJobs = require('./scripts/resetCalories'); // Importa la configuración del cron job
+// const setupCronJobs = require('./scripts/resetCalories'); // Importa la configuración del cron job
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -85,6 +86,7 @@ app.get('/', (req, res) => {
 app.use('/api/users', createUserRouter);
 app.use('/api/users', logguinUser);
 app.use('/api/users', calUser);
+app.use('/api/users', createUserBankRouter);
 
 // Ruta para restablecer las calorías
 app.post('/api/resetCalories', async (req, res) => {
@@ -100,5 +102,5 @@ app.post('/api/resetCalories', async (req, res) => {
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  setupCronJobs(); // Configura el cron job cuando el servidor se inicie
+  // setupCronJobs(); // Configura el cron job cuando el servidor se inicie
 });
