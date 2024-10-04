@@ -93,6 +93,7 @@ router.get('/getUserByDniAndPassword', async (req, res) => {
 
     // Verificar si se encontró el usuario
     if (!user) {
+      console.log(req.body,"lo que llega al back");
       return res.status(404).json({ message: 'User not found or invalid credentials' }); // 404 Not Found
     }
 
