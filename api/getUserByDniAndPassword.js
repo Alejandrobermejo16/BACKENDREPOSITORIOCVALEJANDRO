@@ -41,14 +41,14 @@ router.use(async (req, res, next) => {
 // Ruta GET para obtener un usuario por DNI y contraseña
 router.post('/getUserByDniAndPassword', async (req, res) => {
   const dbClient = req.dbClient;
-  const { dni, pass } = req.body; // Obtener DNI y contraseña de los parámetros de consulta
+  const { dni, password } = req.body; // Obtener DNI y contraseña de los parámetros de consulta
 
   try {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('usersBank');
 
     // Buscar el usuario con el DNI y la contraseña proporcionados
-    const user = await collection.findOne({ dni: dni });
+    const user = await collection.findOne({ dni: dni, pass: password });
 
     // Verificar si se encontró el usuario
     if (!user) {
