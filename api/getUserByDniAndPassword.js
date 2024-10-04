@@ -48,7 +48,7 @@ router.post('/getUserByDniAndPassword', async (req, res) => {
     const collection = database.collection('usersBank');
 
     // Buscar el usuario con el DNI y la contraseña proporcionados
-    const user = await collection.findOne({ dni: dni, pass: pass });
+    const user = await collection.findOne({ dni: dni });
 
     // Verificar si se encontró el usuario
     if (!user) {
