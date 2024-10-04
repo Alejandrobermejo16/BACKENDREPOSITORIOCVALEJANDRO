@@ -80,27 +80,27 @@ router.post('/createUserBank', async (req, res) => {
 });
 
 // Ruta GET para obtener un usuario por DNI y contraseña
-router.post('/getUserByDniAndPassword', async (req, res) => {
-  const dbClient = req.dbClient;
-  const { dni, pass } = req.body; // Obtener DNI y contraseña de los parámetros de consulta
+// router.post('/getUserByDniAndPassword', async (req, res) => {
+//   const dbClient = req.dbClient;
+//   const { dni, pass } = req.body; // Obtener DNI y contraseña de los parámetros de consulta
 
-  try {
-    const database = dbClient.db('abmUsers');
-    const collection = database.collection('usersBank');
+//   try {
+//     const database = dbClient.db('abmUsers');
+//     const collection = database.collection('usersBank');
 
-    // Buscar el usuario con el DNI y la contraseña proporcionados
-    const user = await collection.findOne({ dni: dni, pass: pass });
+//     // Buscar el usuario con el DNI y la contraseña proporcionados
+//     const user = await collection.findOne({ dni: dni, pass: pass });
 
-    // Verificar si se encontró el usuario
-    if (!user) {
-      return res.status(404).json({ message: 'User not found or invalid credentials', user }); // 404 Not Found
-    }
+//     // Verificar si se encontró el usuario
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found or invalid credentials', user }); // 404 Not Found
+//     }
 
-    res.status(200).json(user); // Retornar el usuario encontrado
-  } catch (error) {
-    console.error('Error al obtener el usuario:', error);
-    res.status(500).json({ message: 'Error fetching user' });
-  }
-});
+//     res.status(200).json(user); // Retornar el usuario encontrado
+//   } catch (error) {
+//     console.error('Error al obtener el usuario:', error);
+//     res.status(500).json({ message: 'Error fetching user' });
+//   }
+// });
 
 module.exports = router;
