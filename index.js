@@ -86,7 +86,7 @@ app.get('/', (req, res) => {
 });
 
 // Rutas de creación de usuario
-app.use('/api/users/getUserByDniAndPassword', getUserByDniAndPasswordRouter); 
+app.use('/api/users/', getUserByDniAndPasswordRouter); 
 app.use('/api/users', createUserRouter);
 app.use('/api/users', logguinUser);
 app.use('/api/users', calUser);
