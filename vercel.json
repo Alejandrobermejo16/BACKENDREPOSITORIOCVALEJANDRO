@@ -5,6 +5,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "productsUserBank.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/createUserBank.js",
       "use": "@vercel/node"
     },
@@ -33,6 +37,10 @@
     {
       "src": "/(.*)",
       "dest": "/index.js"
+    },
+    {
+      "src": "/api/users/productsUserBank",
+      "dest": "/api/productsUserBank.js"
     },
     {
       "src": "/api/users/createUserBank",
