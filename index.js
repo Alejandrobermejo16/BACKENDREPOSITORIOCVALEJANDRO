@@ -8,7 +8,7 @@ const calUser = require('./api/calUser');
 const resetCalories = require('./api/resetCalories');
 const createUserBankRouter = require('./api/createUserBank');
 const getUserByDniAndPasswordRouter = require('./api/getUserByDniAndPassword');
-const getDataUserProducts = require('./api/productsUserBank');
+const getDataUserProductsRouter = require('./api/productsUserBank');
 
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
@@ -91,7 +91,7 @@ app.use('/api/users', logguinUser);
 app.use('/api/users', calUser);
 app.use('/api/users', createUserBankRouter);
 app.use('/api/users', getUserByDniAndPasswordRouter);
-app.use('/api/users', getDataUserProducts);
+app.use('/api/users', getDataUserProductsRouter);
 
 
 
