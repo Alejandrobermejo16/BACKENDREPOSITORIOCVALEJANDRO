@@ -39,11 +39,11 @@ router.use(async (req, res, next) => {
 // Ruta para crear usuarios
 router.post('/createUserBank', async (req, res) => {
   // Desestructuramos los campos del cuerpo de la solicitud
-  const { dni, name, pass, card1, card2, account1, account2 } = req.body;
+  const { dni, name, pass, Accounts,Cards } = req.body;
   
 
   // Validación de campos requeridos
-  if (!dni || !name || !pass || !card1 || !card2 || !account1 || !account2) {
+  if (!dni || !name || !pass ||  !Accounts || !Cards) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
