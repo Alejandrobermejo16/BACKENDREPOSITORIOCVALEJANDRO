@@ -1,19 +1,3 @@
-const express = require('express');
-const nodemailer = require('nodemailer');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const createUserRouter = require('./api/createUser');
-const logguinUser = require('./api/logguin');
-const calUser = require('./api/calUser');
-const resetCalories = require('./api/resetCalories');
-const createUserBankRouter = require('./api/createUserBank');
-const getUserByDniAndPasswordRouter = require('./api/getUserByDniAndPassword');
-const getDataUserProductsRouter = require('./api/productsUserBank');
-
-const { MongoClient } = require('mongodb');
-require('dotenv').config();
-// const setupCronJobs = require('./scripts/resetCalories'); // Importa la configuración del cron job
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 
