@@ -15,7 +15,7 @@ require('dotenv').config();
 // const setupCronJobs = require('./scripts/resetCalories'); // Importa la configuración del cron job
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000 || 3001;
 
 // Configuración de la base de datos
 const uri = process.env.MONGODB_URI;
