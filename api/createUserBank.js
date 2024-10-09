@@ -63,7 +63,7 @@ router.post('/createUserBank', async (req, res) => {
   
     // Si el usuario no existe, continuamos con la creación del nuevo usuario
     const hashedPassword = await bcrypt.hash(pass, 10);
-    const newUser = { dni, name, pass: hashedPassword, card1, card2, account1, account2 };
+    const newUser = { dni, name, pass: hashedPassword, Accounts,Cards };
   
     // Insertamos el nuevo usuario en la base de datos
     const result = await collection.insertOne(newUser);
