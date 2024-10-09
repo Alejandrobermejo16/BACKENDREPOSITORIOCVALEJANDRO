@@ -12,13 +12,12 @@ const getDataUserProductsRouter = require('./api/productsUserBank');
 
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
-// const setupCronJobs = require('./scripts/resetCalories'); // Importa la configuración del cron job
 
 const app = express();
-const PORT = process.env.PORT || 3000 || 3001;
+const PORT = process.env.PORT || 3000;
 
 // Configuración de la base de datos
-const uri = process.env.MONGODB_URI;
+const uri = process.env.NODE_ENV === 'production' ? process.env.MONGODB_URI : process.env.MONGODB_LOCAL_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Middleware para conectar a la base de datos
@@ -26,7 +25,7 @@ app.use(async (req, res, next) => {
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
-      console.log('Conexión establecida index');
+      console.log('Conexión establecida a la base de datos.');
     }
     req.dbClient = client;
     next();
@@ -38,7 +37,7 @@ app.use(async (req, res, next) => {
 
 // Middleware para permitir solicitudes CORS desde un origen específico
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001','https://abmprojects-7kay.vercel.app'],
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'https://abmprojects-7kay.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Si necesitas enviar cookies con la solicitud
@@ -93,8 +92,6 @@ app.use('/api/users', createUserBankRouter);
 app.use('/api/users', getUserByDniAndPasswordRouter);
 app.use('/api/users', getDataUserProductsRouter);
 
-
-
 // Ruta para restablecer las calorías
 app.post('/api/resetCalories', async (req, res) => {
   try {
@@ -109,5 +106,4 @@ app.post('/api/resetCalories', async (req, res) => {
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  // setupCronJobs(); // Configura el cron job cuando el servidor se inicie
 });
