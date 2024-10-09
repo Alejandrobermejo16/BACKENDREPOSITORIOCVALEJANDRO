@@ -38,7 +38,7 @@ app.use(async (req, res, next) => {
 
 // Middleware para permitir solicitudes CORS desde un origen específico
 app.use(cors({
-  origin: ['https://abmprojects-7kay.vercel.app','http://localhost:3000/'],
+  origin: ['https://abmprojects-7kay.vercel.app', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Si necesitas enviar cookies con la solicitud
