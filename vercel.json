@@ -31,6 +31,10 @@
     {
       "src": "api/getUserByDniAndPassword.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/createNewSection.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -65,6 +69,10 @@
     {
       "src": "/api/resetCalories",
       "dest": "/api/resetCalories.js"
+    },
+    {
+      "src": "/api/createNewSection",
+      "dest": "/api/createNewSection.js"
     }
   ]
 }
