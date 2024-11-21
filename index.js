@@ -38,12 +38,20 @@ app.use(async (req, res, next) => {
 });
 
 // Middleware para permitir solicitudes CORS desde un origen específico
-app.use(cors({
-  origin: ['https://abmprojects-7kay.vercel.app', 'http://localhost:3000'], //FUNCIONANDO EN AMBOS ENTORNOS
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // Si necesitas enviar cookies con la solicitud
-}));
+app.use(
+  cors({
+    origin: [
+      "https://abmprojects-7kay.vercel.app", // Permitir el dominio principal y subrutas
+      "http://localhost:3000", // Permitir entorno local para desarrollo
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"], // Métodos HTTP permitidos
+    allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
+    credentials: true, // Permitir cookies/autenticación
+  })
+);
+
+// Manejar preflight requests para todas las rutas
+app.options("*", cors());
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(bodyParser.json());
