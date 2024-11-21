@@ -10,6 +10,7 @@ const createUserBankRouter = require('./api/createUserBank');
 const getUserByDniAndPasswordRouter = require('./api/getUserByDniAndPassword');
 const getDataUserProductsRouter = require('./api/productsUserBank');
 const createNewSectionRouter = require('./api/createNewSection');
+const getSectionsRouter = require('./api/getSections');
 
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
@@ -102,8 +103,7 @@ app.use('/api/users', createUserBankRouter);
 app.use('/api/users', getUserByDniAndPasswordRouter);
 app.use('/api/users', getDataUserProductsRouter);
 app.use('/api/users', createNewSectionRouter);
-
-
+app.use('/api/users', getSectionsRouter);
 
 
 // Ruta para restablecer las calorías
