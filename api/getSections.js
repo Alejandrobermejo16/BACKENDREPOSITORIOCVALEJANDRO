@@ -23,21 +23,23 @@ router.get('/getSections', async (req, res) => {
 
 router.get('/getContent', async (req, res) => {
     const dbClient = req.dbClient;
+    const selectedSection = req.query.selectedSection; // Obtiene la sección seleccionada desde los parámetros de la URL
 
     try {
         const database = dbClient.db('abmUsers');
         const collection = database.collection('abmSections');
         
-        const sections = await collection.find({}).toArray();
+        const section = await collection.findOne({ Sections: selectedSection }); // Encuentra una sección específica
 
-        if (sections.length === 0) {
-            return res.status(404).json({ message: 'No secciones encontradas' });
+        if (!section) {
+            return res.status(404).json({ message: 'Sección no encontrada' });
         }
 
-       
+        // Devuelve solo el contenido de la sección encontrada
+        res.json({ content: section.contentSave });
     } catch (error) {
-        console.error('Error al obtener las secciones:', error);
-        res.status(500).json({ message: 'Error al obtener las secciones' });
+        console.error('Error al obtener la sección:', error);
+        res.status(500).json({ message: 'Error al obtener la sección' });
     }
 });
 
