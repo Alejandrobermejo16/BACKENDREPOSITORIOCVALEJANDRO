@@ -32,16 +32,17 @@ router.get('/getContent', async (req, res) => {
         const section = await collection.findOne({ Sections: selectedSection }); // Encuentra una sección específica
 
         if (!section) {
-            return res.status(404).json({ message: 'Sección no encontrada' });
+            return res.status(404).json({ message: `Sección no encontrada: ${selectedSection}` });
         }
 
-        // Devuelve solo el contenido de la sección encontrada
-        res.json({ content: section.contentSave });
+        // Devuelve tanto el valor del parámetro como el contenido de la sección encontrada
+        res.json({ selectedSection, content: section.contentSave });
     } catch (error) {
         console.error('Error al obtener la sección:', error);
         res.status(500).json({ message: 'Error al obtener la sección' });
     }
 });
+
 
 
 module.exports = router;
