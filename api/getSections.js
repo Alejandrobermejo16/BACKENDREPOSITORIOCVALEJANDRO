@@ -23,7 +23,7 @@ router.get('/getSections', async (req, res) => {
 
 router.get('/getContent', async (req, res) => {
     const dbClient = req.dbClient;
-    const selectedSection = req.query.selectedSection; // Obtiene la sección seleccionada desde los parámetros de la URL
+    const selectedSection = req.query.orderSections; // Obtiene el parámetro desde la URL
 
     try {
         const database = dbClient.db('abmUsers');
