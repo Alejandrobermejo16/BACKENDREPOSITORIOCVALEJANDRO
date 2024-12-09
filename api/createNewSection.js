@@ -41,36 +41,86 @@ router.use(async (req, res, next) => {
   }
 });
 
-// Ruta para crear una nueva sección
+// Ruta para crear o actualizar una sección
 router.post("/createNewSection", async (req, res) => {
-  const { orderSections } = req.body;
+  const { orderSections, contentSave } = req.body;
 
   try {
-    const database = req.dbClient.db("abmUsers"); // Cambié dbClient por req.dbClient
+    const database = req.dbClient.db("abmUsers");
     const collection = database.collection("abmSections");
 
-    // Verificamos si la sección ya existe en la base de datos
-    const existingorderSections = await collection.findOne({
+    // Verificamos si la sección ya existe
+    const existingSection = await collection.findOne({
       Sections: orderSections,
     });
 
-    // Si la sección existe, retornamos el error 409
-    if (existingorderSections) {
-      return res.status(409).json({ message: "La sección ya existe" });
-    }
+    if (existingSection) {
+      // Si la sección ya existe y no tiene contenido (contentSave vacío), devolvemos un error
+      if (!existingSection.contentSave) {
+        return res.status(409).json({ message: "La sección ya existe pero no tiene contenido" });
+      }
 
-    // Si la sección no existe, creamos la nueva
-    if (!existingorderSections) {
-      const neworderSections = { Sections: orderSections };
-      // Insertamos la nueva sección en la base de datos
-      const result = await collection.insertOne(neworderSections);
+      // Si la sección existe y tiene contenido, la actualizamos con el nuevo contenido
+      if (contentSave) {
+        const updatedSection = {
+          $set: { contentSave: contentSave }, // Actualizamos el campo contentSave
+        };
 
-      // Devolvemos una respuesta exitosa con el estado 201
+        await collection.updateOne(
+          { Sections: orderSections },
+          updatedSection
+        );
+
+        return res.status(200).json({ message: "Sección actualizada correctamente" });
+      }
+    } else {
+      // Si la sección no existe, la creamos sin contenido
+      const newSection = {
+        Sections: orderSections,
+        contentSave: "", // Al principio no tiene contenido
+      };
+
+      await collection.insertOne(newSection);
+
       return res.status(201).json({ message: "Sección creada correctamente" });
     }
   } catch (error) {
-    console.error("Error al crear sección:", error);
-    return res.status(500).json({ message: "Error creando sección" });
+    console.error("Error al crear o actualizar la sección:", error);
+    return res.status(500).json({ message: "Error creando o actualizando sección" });
+  }
+});
+
+// Ruta para actualizar solo el contenido de una sección existente (si ya existe)
+router.post("/updateSectionContent", async (req, res) => {
+  const { orderSections, contentSave } = req.body;
+
+  try {
+    const database = req.dbClient.db("abmUsers");
+    const collection = database.collection("abmSections");
+
+    // Verificamos si la sección existe
+    const existingSection = await collection.findOne({
+      Sections: orderSections,
+    });
+
+    if (existingSection) {
+      // Si la sección existe, actualizamos solo el contenido
+      const updatedSection = {
+        $set: { contentSave: contentSave }, // Actualizamos el contenido de la sección
+      };
+
+      await collection.updateOne(
+        { Sections: orderSections },
+        updatedSection
+      );
+
+      return res.status(200).json({ message: "Contenido de la sección actualizado correctamente" });
+    } else {
+      return res.status(404).json({ message: "Sección no encontrada para actualización" });
+    }
+  } catch (error) {
+    console.error("Error al actualizar el contenido de la sección:", error);
+    return res.status(500).json({ message: "Error al actualizar el contenido de la sección" });
   }
 });
 
