@@ -90,8 +90,7 @@ router.post("/createNewSection", async (req, res) => {
   }
 });
 
-// Ruta para actualizar solo el contenido de una sección existente (si ya existe)
-router.post("/updateSectionContent", async (req, res) => {
+router.put("/updateSectionContent", async (req, res) => {
   const { orderSections, contentSave } = req.body;
 
   try {
@@ -123,6 +122,7 @@ router.post("/updateSectionContent", async (req, res) => {
     return res.status(500).json({ message: "Error al actualizar el contenido de la sección" });
   }
 });
+
 
 // Exporta el router para que pueda ser utilizado en index.js
 module.exports = router;
