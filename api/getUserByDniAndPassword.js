@@ -1,3 +1,5 @@
+const logger = require('../logger/logger');
+
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
@@ -33,7 +35,7 @@ router.use(async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Error al conectar con MongoDB:', error);
-    res.status(500).json({ message: 'Error connecting to database' });
+    res.status(500).json({ error, message: 'Error connecting to database' });
   }
 });
 
@@ -42,7 +44,7 @@ router.use(async (req, res, next) => {
 router.post('/getUserByDniAndPassword', async (req, res) => {
   const dbClient = req.dbClient;
   const { dni, pass } = req.body; // Obtener DNI y contraseña del cuerpo de la solicitud
-
+  
   try {
     const database = dbClient.db('abmUsers');
     const collection = database.collection('usersBank');

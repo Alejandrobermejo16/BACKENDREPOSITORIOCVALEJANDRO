@@ -1,3 +1,6 @@
+
+const logger = require('./logger/logger');
+
 const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
@@ -22,19 +25,19 @@ const PORT = process.env.PORT || 3001;
 // Configuración de la base de datos
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
 // Middleware para conectar a la base de datos
 app.use(async (req, res, next) => {
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
-      console.log('Conexión establecida index');
+      logger.info("Conectado a MongoDB desde index.js");
     }
     req.dbClient = client;
     next();
   } catch (error) {
     console.error('Error al conectar con MongoDB:', error);
     res.status(500).json({ message: 'Error connecting to database' });
+    logger.info("Error al conectar con MongoDB desde index.js:", error);
   }
 });
 
@@ -44,6 +47,7 @@ app.use(
     origin: [
       "https://abmprojects-7kay.vercel.app", // Permitir el dominio principal y subrutas
       "http://localhost:3000", // Permitir entorno local para desarrollo
+      "http://localhost:4200", // Permitir entorno local para desarrollo Angular
     ],
     methods: ["GET", "POST", "PUT", "DELETE"], // Métodos HTTP permitidos
     allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
