@@ -39,6 +39,14 @@
     {
       "src": "api/getSections.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/task/task.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/task/routes.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -81,6 +89,10 @@
     {
       "src": "/api/getSections",
       "dest": "/api/getSections.js"
-    }  
+    },
+    {
+      "src": "/api/users/task",
+      "dest": "/api/task/routes.js"
+    }
   ]
 }

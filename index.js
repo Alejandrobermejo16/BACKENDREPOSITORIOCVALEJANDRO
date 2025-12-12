@@ -1,4 +1,3 @@
-
 const logger = require('./logger/logger');
 
 const express = require('express');
@@ -14,10 +13,10 @@ const getUserByDniAndPasswordRouter = require('./api/getUserByDniAndPassword');
 const getDataUserProductsRouter = require('./api/productsUserBank');
 const createNewSectionRouter = require('./api/createNewSection');
 const getSectionsRouter = require('./api/getSections');
+const getTasksRouter = require('./api/Kanban/routes');
 
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
-// const setupCronJobs = require('./scripts/resetCalories'); // Importa la configuración del cron job
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -108,6 +107,7 @@ app.use('/api/users', getUserByDniAndPasswordRouter);
 app.use('/api/users', getDataUserProductsRouter);
 app.use('/api/users', createNewSectionRouter);
 app.use('/api/users', getSectionsRouter);
+app.use('/api/users/task', getTasksRouter);
 
 
 // Ruta para restablecer las calorías
