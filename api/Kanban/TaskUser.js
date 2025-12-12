@@ -1,5 +1,6 @@
 // api/task/task.js
 const { ObjectId } = require('mongodb');
+const logger = require('../../logger/logger');
 
 async function createGroup(req, res) {
   const { name, members } = req.body;
@@ -96,7 +97,7 @@ async function getTasks(req, res) {
 
   try {
     const db = req.dbClient.db('abmUsers');
-    const user = await db.collection('users').findOne({ email: userEmail });
+    const user = await db.collection('tasks').findOne({ userEmail: userEmail });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     let filter = { userEmail };

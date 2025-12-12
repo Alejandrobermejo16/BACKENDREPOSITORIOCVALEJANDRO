@@ -13,9 +13,9 @@ router.post('/groups/:groupId/addUser', taskController.addUserToGroup);
 router.post('/groups/:groupId/removeUser', taskController.removeUserFromGroup);
 
 // Crear tarea
-router.post('/tasks', taskController.createTask);
+router.post('/createTasks', taskController.createTask);
 
 // Obtener tareas
-router.get('/tasks', taskController.getTasks);
+router.get('/getTasks', taskController.getTasks);
 
 module.exports = router;

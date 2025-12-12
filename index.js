@@ -107,7 +107,7 @@ app.use('/api/users', getUserByDniAndPasswordRouter);
 app.use('/api/users', getDataUserProductsRouter);
 app.use('/api/users', createNewSectionRouter);
 app.use('/api/users', getSectionsRouter);
-app.use('/api/task', getTasksRouter);
+app.use('/api', getTasksRouter);
 
 
 // Ruta para restablecer las calorías
