@@ -48,7 +48,7 @@ app.use(
       "http://localhost:3000", // Permitir entorno local para desarrollo
       "http://localhost:4200", // Permitir entorno local para desarrollo Angular
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"], // Métodos HTTP permitidos
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Métodos HTTP permitidos
     allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
     credentials: true, // Permitir cookies/autenticación
   })
