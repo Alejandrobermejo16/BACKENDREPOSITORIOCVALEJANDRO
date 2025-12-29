@@ -118,10 +118,38 @@ async function getTasks(req, res) {
   }
 }
 
+async function updateTaskStatus(req, res) {
+  const { taskId, status } = req.body;
+
+  if (!taskId || !status) {
+    return res.status(400).json({ message: 'taskId and status are required' });
+  }
+
+  try {
+    const db = req.dbClient.db('abmUsers');
+
+    const result = await db.collection('tasks').updateOne(
+      { _id: new ObjectId(taskId) },
+      { $set: { status } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: 'Task not found or status unchanged' });
+    }
+
+    res.status(200).json({ message: 'Task status updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error updating task status', error: error.message });
+  }
+}
+
+
 module.exports = {
   createGroup,
   addUserToGroup,
   removeUserFromGroup,
   createTask,
-  getTasks
+  getTasks,
+  updateTaskStatus
 };

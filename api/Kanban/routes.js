@@ -18,4 +18,6 @@ router.post('/createTasks', taskController.createTask);
 // Obtener tareas
 router.get('/getTasks', taskController.getTasks);
 
+router.patch('/updateTaskStatus', taskController.updateTaskStatus);
+
 module.exports = router;
