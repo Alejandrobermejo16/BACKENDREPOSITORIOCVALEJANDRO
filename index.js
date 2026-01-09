@@ -46,7 +46,8 @@ app.use(
     origin: [
       "https://abmprojects-7kay.vercel.app", // Permitir el dominio principal y subrutas
       "http://localhost:3000", // Permitir entorno local para desarrollo
-      "http://localhost:4200", // Permitir entorno local para desarrollo Angular
+      "http://localhost:4200", // Permitir entorno local para desarrollo Angular,
+      "https://abm-angular-projects.vercel.app"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Métodos HTTP permitidos
     allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
