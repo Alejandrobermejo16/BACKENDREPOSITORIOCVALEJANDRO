@@ -144,6 +144,20 @@ async function updateTaskStatus(req, res) {
   }
 }
 
+async function deleteTask(req, res) {
+  const { task_id } = req.params;
+  try {
+    const db = req.dbClient.db('abmUsers');
+    const result = await db.collection('tasks').deleteOne({
+      _id: new ObjectId(task_id)
+    });
+    res.status(200).json({ message: 'Task deleted', taskId: task_id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error deleting task', error: error.message });
+  }
+}
+
 
 module.exports = {
   createGroup,
@@ -151,5 +165,6 @@ module.exports = {
   removeUserFromGroup,
   createTask,
   getTasks,
-  updateTaskStatus
+  updateTaskStatus,
+  deleteTask
 };
