@@ -159,7 +159,7 @@ async function deleteTask(req, res) {
 }
 
 async function assignTaskToUser(req, res) {
-  const { task_id, usermail } = req.params;
+  const { task_id, usermail } = req.body;
   try {
     const db = req.dbClient.db('abmUsers');
     const result = await db.collection('tasks').updateOne(
