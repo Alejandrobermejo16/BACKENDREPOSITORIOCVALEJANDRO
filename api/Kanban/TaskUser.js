@@ -76,15 +76,26 @@ async function createTask(req, res) {
   if (!title || !userEmail) return res.status(400).json({ message: 'title and userEmail required' });
   try {
     const db = req.dbClient.db('abmUsers');
-    const result = await db.collection('tasks').insertOne({
+    const createdAt = new Date();
+    const newTask = {
       title,
       description: description || '',
       userEmail,
       groupId: groupId || null,
       status: status,
-      createdAt: new Date()
+      createdAt: createdAt
+    };
+    const result = await db.collection('tasks').insertOne(newTask);
+    
+    res.status(201).json({
+      _id: result.insertedId,
+      title,
+      description: description || '',
+      userEmail,
+      groupId: groupId || null,
+      status: status,
+      createdAt: createdAt.toISOString()
     });
-    res.status(201).json({ message: 'Task created', taskId: result.insertedId });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error creating task', error: error.message });
