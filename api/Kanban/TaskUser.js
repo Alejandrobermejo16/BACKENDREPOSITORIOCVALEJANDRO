@@ -159,13 +159,22 @@ async function deleteTask(req, res) {
 }
 
 async function assignTaskToUser(req, res) {
+  logger.info('assignTaskToUser req.body:', JSON.stringify(req.body));
   const { task_id, usermail } = req.body;
   try {
+    logger.info(`Assigning task ${task_id} to user ${usermail}`);
     const db = req.dbClient.db('abmUsers');
+    
+    const taskExists = await db.collection('tasks').findOne({ _id: new ObjectId(task_id) });
+    if (taskExists) {
+      logger.info(`Task details: ${JSON.stringify(taskExists)}`);
+    }
+    
     const result = await db.collection('tasks').updateOne(
       { _id: new ObjectId(task_id) },
-      { $set: { userEmail: usermail } }
+      { $set: { assignedUserEmail: usermail } }
     );
+    logger.info(`Modified count: ${result.modifiedCount}`);
     if (result.modifiedCount === 0) {
       return res.status(404).json({ message: 'Tarea no encontrada' });
     }
