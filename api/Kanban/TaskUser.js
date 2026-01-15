@@ -158,6 +158,24 @@ async function deleteTask(req, res) {
   }
 }
 
+async function assignTaskToUser(req, res) {
+  const { task_id, usermail } = req.params;
+  try {
+    const db = req.dbClient.db('abmUsers');
+    const result = await db.collection('tasks').updateOne(
+      { _id: new ObjectId(task_id) },
+      { $set: { userEmail: usermail } }
+    );
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: 'Tarea no encontrada' });
+    }
+    res.status(200).json({ message: 'Persona asignada correctamente a la tarea', taskId: task_id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error asignando persona a la tarea', error: error.message });
+  }
+}
+
 
 module.exports = {
   createGroup,
@@ -166,5 +184,6 @@ module.exports = {
   createTask,
   getTasks,
   updateTaskStatus,
-  deleteTask
+  deleteTask,
+  assignTaskToUser
 };
