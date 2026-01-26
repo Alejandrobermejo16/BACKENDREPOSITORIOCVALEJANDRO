@@ -239,11 +239,7 @@ async function disabledPolicityDeleteTask(req, res) {
         userEmail: userEmail,
         status: 'Deployed'
       },
-      {
-        $unset: {
-          autoDeleteDate: ""
-        }
-      }
+      { $unset: { autoDeleteDate: "" } }
     );
     
     logger.info(`Modified ${result.modifiedCount} tasks`);
@@ -251,7 +247,6 @@ async function disabledPolicityDeleteTask(req, res) {
     res.status(200).json({ 
       message: 'Política de borrado automático aplicada', 
       tasksUpdated: result.modifiedCount,
-      autoDeleteDate: autoDeleteDate.toISOString()
     });
   } catch (error) {
     console.error(error);
