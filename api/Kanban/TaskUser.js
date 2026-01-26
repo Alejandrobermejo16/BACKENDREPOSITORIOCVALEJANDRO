@@ -228,6 +228,32 @@ async function sendDeletePolicityTask(req, res) {
   }
 }
 
+async function disabledPolicityDeleteTask(req, res) {
+  logger.info('disabledPolicityDeleteTask req.body:', JSON.stringify(req.body));
+  const { userEmail } = req.body;
+  
+  try {
+    const db = req.dbClient.db('abmUsers');
+    const result = await db.collection('tasks').updateMany(
+      { 
+        userEmail: userEmail,
+        status: 'Deployed'
+      },
+      { $unset: { autoDeleteDate: "" } }
+    );
+    
+    logger.info(`Modified ${result.modifiedCount} tasks`);
+    
+    res.status(200).json({ 
+      message: 'Política de borrado automático aplicada', 
+      tasksUpdated: result.modifiedCount,
+      autoDeleteDate: autoDeleteDate.toISOString()
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error quitar política de borrado', error: error.message });
+  }
+}
 
 module.exports = {
   createGroup,
@@ -238,5 +264,6 @@ module.exports = {
   updateTaskStatus,
   deleteTask,
   assignTaskToUser,
-  sendDeletePolicityTask
+  sendDeletePolicityTask,
+  disabledPolicityDeleteTask
 };
