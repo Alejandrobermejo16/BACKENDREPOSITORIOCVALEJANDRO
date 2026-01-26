@@ -239,7 +239,11 @@ async function disabledPolicityDeleteTask(req, res) {
         userEmail: userEmail,
         status: 'Deployed'
       },
-      { $unset: { autoDeleteDate: "" } }
+      {
+        $unset: {
+          autoDeleteDate: ""
+        }
+      }
     );
     
     logger.info(`Modified ${result.modifiedCount} tasks`);
