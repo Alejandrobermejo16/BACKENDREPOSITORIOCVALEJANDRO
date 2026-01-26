@@ -198,36 +198,28 @@ async function assignTaskToUser(req, res) {
 
 async function sendDeletePolicityTask(req, res) {
   logger.info('sendDeletePolicityTask req.body:', JSON.stringify(req.body));
-  const { usermail, taskId, status, deletedDays } = req.body;
+  const { userEmail, deletedDays } = req.body;
   
   try {
-    logger.info(`Setting auto-delete for task ${taskId} (status: ${status}) - ${deletedDays} days`);
     const db = req.dbClient.db('abmUsers');
     
     const now = new Date();
     const autoDeleteDate = new Date(now.getTime() + deletedDays * 24 * 60 * 60 * 1000);
     
-    const taskExists = await db.collection('tasks').findOne({ _id: new ObjectId(taskId) });
-    if (!taskExists) {
-      return res.status(404).json({ message: 'Tarea no encontrada' });
-    }
-    
-    logger.info(`Task details: ${JSON.stringify(taskExists)}`);
-    
-    const result = await db.collection('tasks').updateOne(
-      { _id: new ObjectId(taskId) },
+    // Actualizar TODAS las tareas deployed del usuario
+    const result = await db.collection('tasks').updateMany(
+      { 
+        userEmail: userEmail,
+        status: 'Deployed'
+      },
       { $set: { autoDeleteDate: autoDeleteDate.toISOString() } }
     );
     
-    logger.info(`Modified count: ${result.modifiedCount}`);
-    
-    if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: 'Error actualizando la tarea' });
-    }
+    logger.info(`Modified ${result.modifiedCount} tasks`);
     
     res.status(200).json({ 
-      message: 'Política de borrado automático guardada correctamente', 
-      taskId: taskId,
+      message: 'Política de borrado automático aplicada', 
+      tasksUpdated: result.modifiedCount,
       autoDeleteDate: autoDeleteDate.toISOString()
     });
   } catch (error) {
