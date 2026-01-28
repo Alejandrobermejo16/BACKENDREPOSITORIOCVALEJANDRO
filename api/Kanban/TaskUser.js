@@ -157,43 +157,68 @@ async function updateTaskStatus(req, res) {
 
 async function deleteTask(req, res) {
   const { task_id } = req.params;
-  const { taskIds } = req.body;
-  
+  let { taskIds } = req.body;
+
+  logger.info('deleteTask params:', JSON.stringify(req.params));
+  logger.info('deleteTask body:', JSON.stringify(req.body));
+
   try {
     const db = req.dbClient.db('abmUsers');
     let result;
-    
+
+    // Normalizar distintas formas de recibir taskIds
+    if (typeof taskIds === 'string') {
+      try {
+        const parsed = JSON.parse(taskIds);
+        if (Array.isArray(parsed)) taskIds = parsed;
+        else taskIds = taskIds.split(',').map(s => s.trim()).filter(Boolean);
+      } catch {
+        taskIds = taskIds.split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+
     if (taskIds && Array.isArray(taskIds) && taskIds.length > 0) {
-      logger.info(`Deleting multiple tasks: ${taskIds.join(', ')}`);
-      
-      const objectIds = taskIds.map(id => new ObjectId(id));
-      result = await db.collection('tasks').deleteMany({
-        _id: { $in: objectIds }
-      });
-      
-      res.status(200).json({ 
-        message: 'Tasks deleted', 
+      // Filtrar solo ids válidos de 24 hex chars
+      const validIds = taskIds.filter(id => typeof id === 'string' && ObjectId.isValid(id));
+      const invalidIds = taskIds.filter(id => !(typeof id === 'string' && ObjectId.isValid(id)));
+
+      if (invalidIds.length > 0) {
+        return res.status(400).json({
+          message: 'Invalid task ids provided',
+          invalidIds
+        });
+      }
+
+      logger.info(`Deleting multiple tasks: ${validIds.join(', ')}`);
+      const objectIds = validIds.map(id => new ObjectId(id));
+      result = await db.collection('tasks').deleteMany({ _id: { $in: objectIds } });
+
+      return res.status(200).json({
+        message: 'Tasks deleted',
         deletedCount: result.deletedCount,
-        taskIds: taskIds 
+        taskIds: validIds
       });
     }
-    
+
+    // Modo single id por params
     else if (task_id) {
+      if (!ObjectId.isValid(task_id)) {
+        return res.status(400).json({ message: 'Invalid task_id param' });
+      }
+
       logger.info(`Deleting single task: ${task_id}`);
-      
-      result = await db.collection('tasks').deleteOne({
-        _id: new ObjectId(task_id)
-      });
-      
-      res.status(200).json({ 
-        message: 'Task deleted', 
+      result = await db.collection('tasks').deleteOne({ _id: new ObjectId(task_id) });
+
+      return res.status(200).json({
+        message: 'Task deleted',
         deletedCount: result.deletedCount,
-        taskId: task_id 
+        taskId: task_id
       });
-    } 
+    }
+
     else {
-      return res.status(400).json({ 
-        message: 'Either task_id param or taskIds body array is required' 
+      return res.status(400).json({
+        message: 'Either task_id param or taskIds body array is required'
       });
     }
   } catch (error) {
