@@ -157,15 +157,48 @@ async function updateTaskStatus(req, res) {
 
 async function deleteTask(req, res) {
   const { task_id } = req.params;
+  const { taskIds } = req.body;
+  
   try {
     const db = req.dbClient.db('abmUsers');
-    const result = await db.collection('tasks').deleteOne({
-      _id: new ObjectId(task_id)
-    });
-    res.status(200).json({ message: 'Task deleted', taskId: task_id });
+    let result;
+    
+    if (taskIds && Array.isArray(taskIds) && taskIds.length > 0) {
+      logger.info(`Deleting multiple tasks: ${taskIds.join(', ')}`);
+      
+      const objectIds = taskIds.map(id => new ObjectId(id));
+      result = await db.collection('tasks').deleteMany({
+        _id: { $in: objectIds }
+      });
+      
+      res.status(200).json({ 
+        message: 'Tasks deleted', 
+        deletedCount: result.deletedCount,
+        taskIds: taskIds 
+      });
+    }
+    
+    else if (task_id) {
+      logger.info(`Deleting single task: ${task_id}`);
+      
+      result = await db.collection('tasks').deleteOne({
+        _id: new ObjectId(task_id)
+      });
+      
+      res.status(200).json({ 
+        message: 'Task deleted', 
+        deletedCount: result.deletedCount,
+        taskId: task_id 
+      });
+    } 
+    else {
+      return res.status(400).json({ 
+        message: 'Either task_id param or taskIds body array is required' 
+      });
+    }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error deleting task', error: error.message });
+    res.status(500).json({ message: 'Error deleting task(s)', error: error.message });
   }
 }
 
