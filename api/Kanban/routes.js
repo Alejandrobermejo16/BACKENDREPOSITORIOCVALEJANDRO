@@ -9,6 +9,8 @@ router.post('/createTasks', taskController.createTask);
 router.get('/getTasks', taskController.getTasks);
 router.patch('/updateTaskStatus', taskController.updateTaskStatus);
 router.delete('/deleteTasks/:task_id', taskController.deleteTask);
+router.post('/deleteTasks', taskController.deleteTask);
+router.delete('/deleteTasks', taskController.deleteTask);
 router.post('/assignTaskToUser', taskController.assignTaskToUser);
 router.post('/sendDeletePolicityTask', taskController.sendDeletePolicityTask);
 router.post('/disabledPolicityDeleteTask', taskController.disabledPolicityDeleteTask);
