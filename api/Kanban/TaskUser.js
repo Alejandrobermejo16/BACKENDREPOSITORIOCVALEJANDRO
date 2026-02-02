@@ -72,7 +72,7 @@ async function removeUserFromGroup(req, res) {
 }
 
 async function createTask(req, res) {
-  const { title, description, userEmail, groupId, status } = req.body;
+  const { title, description, userEmail, groupId, status, priority } = req.body;
   if (!title || !userEmail) return res.status(400).json({ message: 'title and userEmail required' });
   try {
     const db = req.dbClient.db('abmUsers');
@@ -83,7 +83,8 @@ async function createTask(req, res) {
       userEmail,
       groupId: groupId || null,
       status: status,
-      createdAt: createdAt
+      createdAt: createdAt,
+      priority
     };
     const result = await db.collection('tasks').insertOne(newTask);
     
