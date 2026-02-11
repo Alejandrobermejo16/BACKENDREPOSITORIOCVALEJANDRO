@@ -327,6 +327,47 @@ async function disabledPolicityDeleteTask(req, res) {
   }
 }
 
+async function getLabels(req, res) {
+  try {
+    const db = req.dbClient.db('abmUsers');    const docs = await db.collection('labels').find({}).toArray();
+
+    const labels = (docs || []).map(doc => {
+      if (!doc) return null;
+      if (typeof doc === 'string') return doc;
+      return doc.label || doc.name || doc.value || doc;
+    }).filter(Boolean);
+
+    return res.status(200).json({ labels });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al cargar combos', error: error.message });
+  }
+}
+
+async function createLabel(req, res) {
+  const { label } = req.body;
+  const labelStr = (label || '').toString().trim();
+  if (!labelStr) return res.status(400).json({ message: 'label is required' });
+
+  try {
+    const db = req.dbClient.db('abmUsers');
+
+    // Check duplicate (case-insensitive)
+    const existing = await db.collection('labels').findOne({ label: { $regex: `^${labelStr}$`, $options: 'i' } });
+    if (existing) {
+      return res.status(409).json({ message: 'Label already exists', label: existing.label || existing });
+    }
+
+    const doc = { label: labelStr, value: labelStr, createdAt: new Date().toISOString() };
+    const result = await db.collection('labels').insertOne(doc);
+
+    return res.status(201).json({ message: 'Label created', label: labelStr, value: labelStr, _id: result.insertedId });
+  } catch (error) {
+    console.error('createLabel error:', error);
+    return res.status(500).json({ message: 'Error creating label', error: error.message });
+  }
+}
+
 module.exports = {
   createGroup,
   addUserToGroup,
@@ -337,5 +378,7 @@ module.exports = {
   deleteTask,
   assignTaskToUser,
   sendDeletePolicityTask,
-  disabledPolicityDeleteTask
+  disabledPolicityDeleteTask,
+  createLabel,
+  getLabels
 };

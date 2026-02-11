@@ -14,5 +14,7 @@ router.delete('/deleteTasks', taskController.deleteTask);
 router.post('/assignTaskToUser', taskController.assignTaskToUser);
 router.post('/sendDeletePolicityTask', taskController.sendDeletePolicityTask);
 router.post('/disabledPolicityDeleteTask', taskController.disabledPolicityDeleteTask);
+router.get('/getLabels', taskController.getLabels);
+router.post('/createLabel', taskController.createLabel);
 
 module.exports = router;
