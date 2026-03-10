@@ -103,7 +103,7 @@ async function getUserGroups(req, res) {
 
   try {
     const db = req.dbClient.db('abmUsers');
-    const user = await db.collection('users').findOne({ email: userEmail });
+    const user = await db.collection('groups').findOne({ email: userEmail });
     
     const groups = user?.userGroups || [];
     res.status(200).json({ groups });
