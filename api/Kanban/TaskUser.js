@@ -140,19 +140,14 @@ async function searchGroups(req, res) {
   try {
     const db = req.dbClient.db('abmUsers');
     
-    const users = await db.collection('users').find(
-      { userGroups: { $regex: query, $options: 'i' } },
-      { projection: { userGroups: 1 } }
+    const docs = await db.collection('labels').find(
+      { label: { $regex: query, $options: 'i' } },
+      { projection: { label: 1 } }
     ).toArray();
     
-    const allGroups = users.flatMap(u => u.userGroups || []);
-    const uniqueGroups = [...new Set(allGroups)];
+    const groups = docs.map(d => d.label).filter(Boolean);
     
-    const filtered = uniqueGroups.filter(g => 
-      g.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    res.status(200).json({ groups: filtered });
+    res.status(200).json({ groups });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error searching groups', error: error.message });
