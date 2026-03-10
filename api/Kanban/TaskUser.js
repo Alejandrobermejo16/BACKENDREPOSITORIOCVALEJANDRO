@@ -120,7 +120,8 @@ async function unsubscribeFromGroup(req, res) {
   try {
     const db = req.dbClient.db('abmUsers');
     
-    await db.collection('users').updateOne(
+    // Eliminar el grupo del array userGroups en la colección groups
+    await db.collection('groups').updateOne(
       { email: userEmail },
       { $pull: { userGroups: group } }
     );
