@@ -161,7 +161,7 @@ async function searchGroups(req, res) {
 
 
 async function createTask(req, res) {
-  const { title, description, userEmail, groupsTask, status, priority } = req.body;
+  const { title, description, userEmail, taskGroups, status, priority } = req.body;
   if (!title || !userEmail) return res.status(400).json({ message: 'title and userEmail required' });
   try {
     const db = req.dbClient.db('abmUsers');
@@ -170,7 +170,7 @@ async function createTask(req, res) {
       title,
       description: description || '',
       userEmail,
-      groupsTask: groupsTask || [],
+      taskGroups: taskGroups || [],
       status: status,
       createdAt: createdAt,
       priority
@@ -182,7 +182,7 @@ async function createTask(req, res) {
       title,
       description: description || '',
       userEmail,
-      groupsTask: groupsTask || [],
+      taskGroups: taskGroups || [],
       status: status,
       createdAt: createdAt.toISOString()
     });
