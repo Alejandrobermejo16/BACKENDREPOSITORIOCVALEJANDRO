@@ -77,7 +77,7 @@ async function subscribeToGroup(req, res) {
 
   try {
     const db = req.dbClient.db('abmUsers');
-    const result = await db.collection('users').updateOne(
+    const result = await db.collection('groups').updateOne(
       { email: userEmail },
       { 
         $addToSet: { userGroups: group },
