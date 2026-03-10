@@ -202,11 +202,13 @@ async function getTasks(req, res) {
 
     let filter = { userEmail };
     
-    // Si se proporciona un grupo, filtrar tareas que contengan ese grupo en taskGroups
+    // Si se proporciona un grupo, filtrar tareas del usuario O que contengan ese grupo en taskGroups
     if (group) {
       filter = {
-        userEmail,
-        taskGroups: group
+        $or: [
+          { userEmail },
+          { taskGroups: group }
+        ]
       };
     }
 
