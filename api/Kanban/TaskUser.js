@@ -194,20 +194,28 @@ async function createTask(req, res) {
 }
 
 async function getTasks(req, res) {
-  const { userEmail, group } = req.query;
+  const { userEmail } = req.query;
   if (!userEmail) return res.status(400).json({ message: 'userEmail required' });
 
   try {
     const db = req.dbClient.db('abmUsers');
 
+    let groups = [];
+    if (req.query.groups) {
+      try {
+        groups = JSON.parse(decodeURIComponent(req.query.groups));
+      } catch {
+        groups = [];
+      }
+    }
+
     let filter = { userEmail };
-    
-    // Si se proporciona un grupo, filtrar tareas del usuario O que contengan ese grupo en taskGroups
-    if (group) {
+
+    if (groups.length > 0) {
       filter = {
         $or: [
           { userEmail },
-          { taskGroups: group }
+          { taskGroups: { $in: groups } }
         ]
       };
     }
