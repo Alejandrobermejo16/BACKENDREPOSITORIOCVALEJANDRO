@@ -71,6 +71,95 @@ async function removeUserFromGroup(req, res) {
   }
 }
 
+async function subscribeToGroup(req, res) {
+  const { userEmail, group } = req.body;
+  if (!userEmail || !group) return res.status(400).json({ message: 'userEmail and group are required' });
+
+  try {
+    const db = req.dbClient.db('abmUsers');
+    const result = await db.collection('users').updateOne(
+      { email: userEmail },
+      { 
+        $addToSet: { userGroups: group },
+        $setOnInsert: { email: userEmail, createdAt: new Date() }
+      },
+      { upsert: true }
+    );
+    
+    res.status(200).json({ 
+      message: 'Subscribed to group successfully', 
+      group,
+      wasNew: result.upsertedCount > 0
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error subscribing to group', error: error.message });
+  }
+}
+
+async function getUserGroups(req, res) {
+  const { userEmail } = req.query;
+  if (!userEmail) return res.status(400).json({ message: 'userEmail is required' });
+
+  try {
+    const db = req.dbClient.db('abmUsers');
+    const user = await db.collection('users').findOne({ email: userEmail });
+    
+    const groups = user?.userGroups || [];
+    res.status(200).json({ groups });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching user groups', error: error.message });
+  }
+}
+
+async function unsubscribeFromGroup(req, res) {
+  const { userEmail, group } = req.body;
+  if (!userEmail || !group) return res.status(400).json({ message: 'userEmail and group are required' });
+
+  try {
+    const db = req.dbClient.db('abmUsers');
+    
+    await db.collection('users').updateOne(
+      { email: userEmail },
+      { $pull: { userGroups: group } }
+    );
+    
+    res.status(200).json({ message: 'Unsubscribed from group successfully', group });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error unsubscribing from group', error: error.message });
+  }
+}
+
+async function searchGroups(req, res) {
+  const { query } = req.query;
+  if (!query) return res.status(400).json({ message: 'query is required' });
+
+  try {
+    const db = req.dbClient.db('abmUsers');
+    
+    const users = await db.collection('users').find(
+      { userGroups: { $regex: query, $options: 'i' } },
+      { projection: { userGroups: 1 } }
+    ).toArray();
+    
+    const allGroups = users.flatMap(u => u.userGroups || []);
+    const uniqueGroups = [...new Set(allGroups)];
+    
+    const filtered = uniqueGroups.filter(g => 
+      g.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    res.status(200).json({ groups: filtered });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error searching groups', error: error.message });
+  }
+}
+
+
+
 async function createTask(req, res) {
   const { title, description, userEmail, groupId, status, priority } = req.body;
   if (!title || !userEmail) return res.status(400).json({ message: 'title and userEmail required' });
@@ -380,5 +469,9 @@ module.exports = {
   sendDeletePolicityTask,
   disabledPolicityDeleteTask,
   createLabel,
-  getLabels
+  getLabels,
+  subscribeToGroup,
+  getUserGroups,
+  unsubscribeFromGroup,
+  searchGroups
 };
