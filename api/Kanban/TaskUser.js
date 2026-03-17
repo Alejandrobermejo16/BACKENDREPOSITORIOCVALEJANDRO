@@ -204,15 +204,18 @@ async function getTasks(req, res) {
       }
     }
 
-    let filter = { userEmail };
+    let filter;
 
     if (groups.length > 0) {
       filter = {
         $or: [
           { userEmail },
           { taskGroups: { $in: groups } }
-        ]
+        ],
+        deleted: { $ne: true }
       };
+    } else {
+      filter = { userEmail, deleted: { $ne: true } };
     }
 
     const tasks = await db.collection('tasks').find(filter).toArray();
@@ -265,16 +268,15 @@ async function updateTaskStatus(req, res) {
 
 async function deleteTask(req, res) {
   const { task_id } = req.params;
-  let { taskIds } = req.body;
+  let { taskIds, userEmail } = req.body;
 
-  logger.info('deleteTask params:', JSON.stringify(req.params));
-  logger.info('deleteTask body:', JSON.stringify(req.body));
+  if (!userEmail) return res.status(400).json({ message: 'userEmail is required' });
 
   try {
     const db = req.dbClient.db('abmUsers');
+    const now = new Date();
     let result;
 
-    // Normalizar distintas formas de recibir taskIds
     if (typeof taskIds === 'string') {
       try {
         const parsed = JSON.parse(taskIds);
@@ -286,40 +288,44 @@ async function deleteTask(req, res) {
     }
 
     if (taskIds && Array.isArray(taskIds) && taskIds.length > 0) {
-      // Filtrar solo ids válidos de 24 hex chars
       const validIds = taskIds.filter(id => typeof id === 'string' && ObjectId.isValid(id));
       const invalidIds = taskIds.filter(id => !(typeof id === 'string' && ObjectId.isValid(id)));
 
       if (invalidIds.length > 0) {
-        return res.status(400).json({
-          message: 'Invalid task ids provided',
-          invalidIds
-        });
+        return res.status(400).json({ message: 'Invalid task ids provided', invalidIds });
       }
 
-      logger.info(`Deleting multiple tasks: ${validIds.join(', ')}`);
+      logger.info(`Soft deleting multiple tasks: ${validIds.join(', ')}`);
       const objectIds = validIds.map(id => new ObjectId(id));
-      result = await db.collection('tasks').deleteMany({ _id: { $in: objectIds } });
+      result = await db.collection('tasks').updateMany(
+        { _id: { $in: objectIds }, userEmail },
+        { $set: { deleted: true, deletedAt: now } }
+      );
 
       return res.status(200).json({
         message: 'Tasks deleted',
-        deletedCount: result.deletedCount,
+        deletedCount: result.modifiedCount,
         taskIds: validIds
       });
     }
 
-    // Modo single id por params
     else if (task_id) {
       if (!ObjectId.isValid(task_id)) {
         return res.status(400).json({ message: 'Invalid task_id param' });
       }
 
-      logger.info(`Deleting single task: ${task_id}`);
-      result = await db.collection('tasks').deleteOne({ _id: new ObjectId(task_id) });
+      logger.info(`Soft deleting single task: ${task_id}`);
+      result = await db.collection('tasks').updateOne(
+        { _id: new ObjectId(task_id), userEmail },
+        { $set: { deleted: true, deletedAt: now } }
+      );
+
+      if (result.matchedCount === 0) {
+        return res.status(403).json({ message: 'Task not found or not authorized' });
+      }
 
       return res.status(200).json({
         message: 'Task deleted',
-        deletedCount: result.deletedCount,
         taskId: task_id
       });
     }
@@ -332,6 +338,46 @@ async function deleteTask(req, res) {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error deleting task(s)', error: error.message });
+  }
+}
+
+async function recoverTask(req, res) {
+  const { taskId, userEmail } = req.body;
+  if (!taskId || !userEmail) return res.status(400).json({ message: 'taskId and userEmail are required' });
+
+  try {
+    const db = req.dbClient.db('abmUsers');
+    const result = await db.collection('tasks').updateOne(
+      { _id: new ObjectId(taskId), userEmail, deleted: true },
+      { $unset: { deleted: '', deletedAt: '' } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'Task not found, not yours, or already recovered' });
+    }
+
+    res.status(200).json({ message: 'Task recovered successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error recovering task', error: error.message });
+  }
+}
+
+async function getDeletedTasks(req, res) {
+  const { userEmail } = req.query;
+  if (!userEmail) return res.status(400).json({ message: 'userEmail is required' });
+
+  try {
+    const db = req.dbClient.db('abmUsers');
+    const tasks = await db.collection('tasks')
+      .find({ userEmail, deleted: true })
+      .sort({ deletedAt: -1 })
+      .toArray();
+
+    res.status(200).json({ tasks });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching deleted tasks', error: error.message });
   }
 }
 
@@ -469,6 +515,8 @@ module.exports = {
   getTasks,
   updateTaskStatus,
   deleteTask,
+  recoverTask,
+  getDeletedTasks,
   assignTaskToUser,
   sendDeletePolicityTask,
   disabledPolicityDeleteTask,
