@@ -270,6 +270,8 @@ async function deleteTask(req, res) {
   const { task_id } = req.params;
   let { taskIds, userEmail } = req.body;
 
+  if (!userEmail && req.query.userEmail) userEmail = req.query.userEmail;
+
   if (!userEmail) return res.status(400).json({ message: 'userEmail is required' });
 
   try {

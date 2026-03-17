@@ -12,7 +12,7 @@ router.get('/searchGroups', taskController.searchGroups);
 router.post('/createTasks', taskController.createTask);
 router.get('/getTasks', taskController.getTasks);
 router.patch('/updateTaskStatus', taskController.updateTaskStatus);
-router.delete('/deleteTasks/:task_id', taskController.deleteTask);
+router.post('/deleteTasks/:task_id', taskController.deleteTask);
 router.post('/recoverTask', taskController.recoverTask);
 router.get('/getDeletedTasks', taskController.getDeletedTasks);
 router.post('/assignTaskToUser', taskController.assignTaskToUser);
